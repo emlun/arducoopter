@@ -1,0 +1,9 @@
+2012-06-21
+
+Visited the reactor hall. Returned to the lab and tried to connect and
+calibrate radio controller. Attempted to fly the quadrotor with radio
+control, yaw control seems to be broken which made the quadrotor arm
+the motors randomly. Discovered that failsafe seems to be to max the
+throttle, investigated arduino code for the cause of this. The
+failsafe seems to be to rise 10 m, but we did not give it the chance
+to do that while testing.
