@@ -18,7 +18,7 @@ static void arm_motors()
 	}
 
 	// full right
-	if (g.rc_4.control_in > 4000) {
+	if (g.rc_1.control_in > 4000) {
 		if (arming_counter == LEVEL_DELAY){
 			//Serial.printf("\nAL\n");
 			// begin auto leveling
@@ -37,7 +37,7 @@ static void arm_motors()
 		}
 
 	// full left
-	}else if (g.rc_4.control_in < -4000) {
+	}else if (g.rc_1.control_in < -4000) {
 		if (arming_counter == LEVEL_DELAY){
 			//Serial.printf("\nLEV\n");
 
