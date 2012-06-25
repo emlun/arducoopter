@@ -1,3 +1,15 @@
+2012-06-25
+
+Cloned ArduPilot repository on Google Code and published changes to
+the repository.
+Tried to give Erik permission to push to the repo but didn't get it to
+work.
+Changed arm/rearm motors control to roll control instead of yaw
+control, since yaw is broken on our controller.
+Tried to help Erik resurrect his computer after a strange crash where
+nothing at all happened after POST.
+
+
 2012-06-21
 
 Visited the reactor hall. Returned to the lab and tried to connect and
