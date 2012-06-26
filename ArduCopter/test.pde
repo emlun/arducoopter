@@ -36,6 +36,7 @@ static int8_t	test_eedump(uint8_t argc, 		const Menu::arg *argv);
 static int8_t	test_rawgps(uint8_t argc, 		const Menu::arg *argv);
 //static int8_t	test_mission(uint8_t argc, 		const Menu::arg *argv);
 static int8_t   test_vel(uint8_t argc,                  const Menu::arg *argv);
+static int8_t   test_led(uint8_t argc,                  const Menu::arg *argv);
 
 // this is declared here to remove compiler errors
 extern void		print_latlon(BetterStream *s, int32_t lat_or_lon);	// in Log.pde
@@ -91,6 +92,7 @@ const struct Menu::command test_menu_commands[] PROGMEM = {
 	//{"reverse",		test_reverse},
 	//{"wp",			test_wp_nav},
 	{"vel",                 test_vel},
+	{"led",                 test_led},
 };
 
 // A Macro to create the Menu
@@ -1209,6 +1211,34 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
   Serial.println("Inertial navigation is disabled. Exiting.");
 #endif
   
+}
+
+static int8_t test_led(uint8_t argc, const Menu::arg *argv) {
+  print_hit_enter();
+
+  unsigned long updateTime = 100;
+
+  digitalWrite(A_LED_PIN, LED_OFF);
+  digitalWrite(B_LED_PIN, LED_OFF);
+  digitalWrite(C_LED_PIN, LED_OFF);
+
+  while(1) {
+    digitalWrite(C_LED_PIN, LED_OFF);
+    digitalWrite(A_LED_PIN, LED_ON);
+    delay(updateTime);
+
+    digitalWrite(A_LED_PIN, LED_OFF);
+    digitalWrite(B_LED_PIN, LED_ON);
+    delay(updateTime);
+
+    digitalWrite(B_LED_PIN, LED_OFF);
+    digitalWrite(C_LED_PIN, LED_ON);
+    delay(updateTime);
+
+    if(Serial.available() > 0) {
+      return (0);
+    }
+  }
 }
 
 static void print_hit_enter()
