@@ -1,5 +1,9 @@
 #if INERTIAL_NAV == ENABLED
 
+Vector3f pos_error;
+
+float KALMAN_L[3] = {0.06, 0.02, 0.0002}; // Found using a MATLAB script
+
 // generates a new location and velocity in space based on inertia
 // Calc 100 hz
 void calc_inertia()
@@ -33,57 +37,51 @@ void calc_inertia()
 	// ------------------------------------
         temp = accels_velocity * G_Dt; 
         accels_position                 += temp;
+
+void inertial_error_correction() {
+  pos_error = -accels_position;
+  
+  accels_position += pos_error * KALMAN_L[0];
+  accels_velocity += pos_error * KALMAN_L[1];
+  accels_offset += pos_error * KALMAN_L[2];
 }
 
 void z_error_correction()
 {
-  // Called at 10Hz ?????
-  Vector3f pos_error = -accels_position;
-  
-  accels_position.z = 0.2 * pos_error.z;
-  accels_velocity.z = 0.2 * pos_error.z;
-  accels_offset.z = 0.001 * pos_error.z;
-//	speed_error.z 		= climb_rate - accels_velocity.z;
-//	accels_velocity.z	+= speed_error.z * 0.0350;							//speed_correction_z;
-//	accels_velocity.z   -= g.pid_throttle.get_integrator() * 0.0045; 		//g.alt_offset_correction; // OK
-//	accels_offset.z		-= g.pid_throttle.get_integrator() * 0.000003;		//g.alt_i_correction ; 	// .000002;
+	speed_error.z 		= climb_rate - accels_velocity.z;
+	accels_velocity.z	+= speed_error.z * 0.0350;							//speed_correction_z;
+	accels_velocity.z   -= g.pid_throttle.get_integrator() * 0.0045; 		//g.alt_offset_correction; // OK
+	accels_offset.z		-= g.pid_throttle.get_integrator() * 0.000003;		//g.alt_i_correction ; 	// .000002;
 }
 
 void xy_error_correction()
 {
-      accels_position.x = 0.2 * pos_error.x;
-      accels_velocity.x = 0.2 * pos_error.x;
-      accels_offset.x = 0.001 * pos_error.x;
-      
-      accels_position.y = 0.2 * pos_error.y;
-      accels_velocity.y = 0.2 * pos_error.y;
-      accels_offset.y = 0.001 * pos_error.y;
-//	// Calculate speed error
-//	// ---------------------
-//	speed_error.x 		= x_actual_speed - accels_velocity.x;
-//	speed_error.y 		= y_actual_speed - accels_velocity.y;
-//
-//	// correct integrated velocity by speed_error
-//	// this number must be small or we will bring back sensor latency
-//	// -------------------------------------------
-//	accels_velocity.x	+= speed_error.x * 0.0175;								// g.speed_correction_x;
-//	accels_velocity.y	+= speed_error.y * 0.0175;
-//
-//	// Error correct the accels to deal with calibration, drift and noise
-//	// ------------------------------------------------------------------
-//	accels_velocity.x	-= g.pid_loiter_rate_lon.get_integrator() * 0.007; 		// g.loiter_offset_correction; //.001;
-//	accels_velocity.y	-= g.pid_loiter_rate_lat.get_integrator() * 0.007; 		// g.loiter_offset_correction; //.001;
-//
-//	// update our accel offsets
-//	// -------------------------
-//	accels_offset.x		-= g.pid_loiter_rate_lon.get_integrator() * 0.000003; 	// g.loiter_i_correction;
-//	accels_offset.y		-= g.pid_loiter_rate_lat.get_integrator() * 0.000003; 	// g.loiter_i_correction;
-//
-//
-//	// For developement only
-//	// ---------------------
-//	if(motors.armed())
-//		Log_Write_Raw();
+	// Calculate speed error
+	// ---------------------
+	speed_error.x 		= x_actual_speed - accels_velocity.x;
+	speed_error.y 		= y_actual_speed - accels_velocity.y;
+
+	// correct integrated velocity by speed_error
+	// this number must be small or we will bring back sensor latency
+	// -------------------------------------------
+	accels_velocity.x	+= speed_error.x * 0.0175;								 g.speed_correction_x;
+	accels_velocity.y	+= speed_error.y * 0.0175;
+
+	// Error correct the accels to deal with calibration, drift and noise
+	// ------------------------------------------------------------------
+	accels_velocity.x	-= g.pid_loiter_rate_lon.get_integrator() * 0.007; 		//g.loiter_offset_correction; //.001;
+	accels_velocity.y	-= g.pid_loiter_rate_lat.get_integrator() * 0.007; 		// g.loiter_offset_correction; //.001;
+
+	// update our accel offsets
+	// -------------------------
+	accels_offset.x		-= g.pid_loiter_rate_lon.get_integrator() * 0.000003; 	// g.loiter_i_correction;
+	accels_offset.y		-= g.pid_loiter_rate_lat.get_integrator() * 0.000003; 	// g.loiter_i_correction;
+
+
+	// For developement only
+	// ---------------------
+	if(motors.armed())
+		Log_Write_Raw();
 }
 
 static void calibrate_accels()
