@@ -837,6 +837,7 @@ static float G_Dt		= 0.02;
 #if INERTIAL_NAV == ENABLED
 // The rotated accelerometer values
 static Vector3f accels_velocity;
+static Vector3f accels_position;
 
 // accels rotated to world frame
 static Vector3f accels_rotated;

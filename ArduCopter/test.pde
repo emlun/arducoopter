@@ -1198,7 +1198,8 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
     xy_error_correction();
     z_error_correction();
     
-    Serial.printf_P(PSTR("X: %1.3f, Y: %1.3f, Z: %+1.3f\n"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
+    Serial.printf_P(PSTR("U: %1.3f, V: %1.3f, W: %+1.3f\n"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
+    Serial.printf_P(PSTR("X: %1.3f, Y: %1.3f, Z: %+1.3f\n\n"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
     
     if(Serial.available() > 0){
       return (0);
