@@ -1,3 +1,8 @@
+2012-06-27
+Read a little more on the report.
+Worked with inertial navigation: tried to implement a Kalman filter and
+performed some tests by logging and plotting inertial data readings.
+
 2012-06-26
 Wrote a test module that flashes the LEDs on the Arduino board.
 Discussed Kalman filtering a lot with Erik.
