@@ -1209,14 +1209,14 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
       if(counter == 10) {
 	xy_error_correction();
 	z_error_correction();
-	counter = 0;
-	
-	Serial.printf_P(PSTR("Position: [\tx: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
-	Serial.print("\t");
-	Serial.printf_P(PSTR("Velocity: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
-	Serial.print("\t");
-	Serial.printf_P(PSTR("Offset: [\tdx: %+1.3f\tdy: %+1.3f\tdz: %+1.3f]"), accels_offset.x/100, accels_offset.y/100, accels_offset.z/100);
-	Serial.println();
+          counter = 0;
+
+          Serial.printf_P(PSTR("Position: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
+          Serial.print("\t");
+          Serial.printf_P(PSTR("Velocity: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
+          Serial.print("\t");
+          Serial.printf_P(PSTR("Offset: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_offset.x/100, accels_offset.y/100, accels_offset.z/100);
+          Serial.println();
       }
       
       if(Serial.available() > 0){
