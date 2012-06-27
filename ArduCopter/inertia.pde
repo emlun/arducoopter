@@ -91,9 +91,7 @@ static void calibrate_accels()
 	// sets accels_velocity to 0,0,0
 	zero_accels();
 
-	accels_offset.x = 0;
-	accels_offset.y = 0;
-	accels_offset.z = 0;
+	accels_offset.zero();
 
 	for (int i = 0; i < 200; i++){
 		delay(10);
@@ -119,13 +117,9 @@ static void calibrate_accels()
 
 void zero_accels()
 {
-	accels_rotated.x 	= 0;
-	accels_rotated.y 	= 0;
-	accels_rotated.z 	= 0;
-
-	accels_velocity.x 	= 0;
-	accels_velocity.y 	= 0;
-	accels_velocity.z 	= 0;
+  accels_rotated.zero();
+  accels_velocity.zero();
+  accels_position.zero();
 }
 
 
