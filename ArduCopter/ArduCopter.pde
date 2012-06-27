@@ -2029,7 +2029,7 @@ static void update_altitude()
 
 	#if INERTIAL_NAV == ENABLED
 	// inertial_nav
-	z_error_correction();
+	inertial_error_correction();
 	#endif
 }
 

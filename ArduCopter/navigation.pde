@@ -66,7 +66,7 @@ static void calc_XY_velocity(){
 
 	#if INERTIAL_NAV == ENABLED
 	// inertial_nav
-	xy_error_correction();
+	inertial_error_correction();
 	#endif
 
 	/*if(g_gps->ground_speed > 150){
