@@ -1,8 +1,13 @@
 #if INERTIAL_NAV == ENABLED
 
+/**
+ * pos_error is the difference x_{real} - x_{est} where x_{real} is
+ * the position received from an external positioning system and
+ * x_{est} is the position estimated by inertial navigation.
+ **/
 Vector3f pos_error;
 
-float KALMAN_L[3] = {0.06, 0.02, 0.0002}; // Found using a MATLAB script
+float KALMAN_L[3] = {0.12, 0.06, 0.00001}; // Found using a MATLAB script
 
 // generates a new location and velocity in space based on inertia
 // Calc 100 hz
@@ -12,7 +17,7 @@ void calc_inertia()
 	// --------------------------
 	accels_rotated		= ahrs.get_dcm_matrix() * imu.get_accel();
 	accels_rotated		+= accels_offset;						// skew accels to account for long term error using calibration
-	accels_rotated.z 	+= 9.805;								// remove influence of gravity
+	//accels_rotated.z 	+= 9.805;								// remove influence of gravity
 
 	// rising 		= 2
 	// neutral 		= 0
@@ -23,20 +28,25 @@ void calc_inertia()
 	// ACC X POS = going North
 	// ACC Z POS = going DOWN (lets flip this)
 
+
+	// Integrate velocity to get the position
+	// --------------------------------------
+
+	Vector3f temp = accels_velocity * G_Dt;
+
+	accels_position += temp;
+
 	// Integrate accels to get the velocity
 	// ------------------------------------
-	Vector3f temp = accels_rotated * (G_Dt * 100);
-	temp.z = -temp.z;
+	temp = accels_rotated * (G_Dt * 100);
+	//temp.z = -temp.z;
 	// Temp is changed to world frame and we can use it normaly
 
 	// Integrate accels to get the velocity
 	// ------------------------------------
 	accels_velocity			+= temp;
-        
-        // Integrate velocity to get the position
-	// ------------------------------------
-        temp = accels_velocity * G_Dt; 
-        accels_position                 += temp;
+
+}
 
 void inertial_error_correction() {
   pos_error = -accels_position;

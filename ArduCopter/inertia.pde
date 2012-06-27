@@ -1,4 +1,4 @@
-#if INERTIAL_NAV == ENABLED
+#if INERTIAL_NAV == ENABLED && 0
 
 Vector3f pos_error;
 
