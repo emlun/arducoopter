@@ -1207,8 +1207,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 
       counter++;
       if(counter == 10) {
-	xy_error_correction();
-	z_error_correction();
+          inertial_error_correction();
           counter = 0;
 
           Serial.printf_P(PSTR("Position: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
