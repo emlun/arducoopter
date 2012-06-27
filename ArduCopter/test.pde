@@ -1189,23 +1189,39 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
   calibrate_accels();
   
   print_hit_enter();
+
+  unsigned long fast_loopTimer = millis();
+  float delta_ms_fast_loop;
+
+  byte counter = 0;
   
   while(1) {
     
-    delay(20);
-    
-    read_AHRS();
-    calc_inertia();
-    
-    xy_error_correction();
-    z_error_correction();
-    
-    Serial.printf_P(PSTR("U: %+1.3f\tV: %+1.3f\tW: %+1.3f"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
-    Serial.printf_P(PSTR("\tX: %+1.3f\tY: %+1.3f\tZ: %+1.3f"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
-    Serial.printf_P(PSTR("\tdX: %+1.3f\tdY: %+1.3f\tdZ: %+1.3f\n"), accels_offset.x/100, accels_offset.y/100, accels_offset.z/100);
-    
-    if(Serial.available() > 0){
-      return (0);
+    if (millis() - fast_loopTimer > 9) {
+      delta_ms_fast_loop = millis() - fast_loopTimer;
+      fast_loopTimer = millis();
+      G_Dt = (float)delta_ms_fast_loop / 1000.f;
+      
+      read_AHRS();
+      calc_inertia();
+
+      counter++;
+      if(counter == 10) {
+	xy_error_correction();
+	z_error_correction();
+	counter = 0;
+	
+	Serial.printf_P(PSTR("Position: [\tx: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
+	Serial.print("\t");
+	Serial.printf_P(PSTR("Velocity: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
+	Serial.print("\t");
+	Serial.printf_P(PSTR("Offset: [\tdx: %+1.3f\tdy: %+1.3f\tdz: %+1.3f]"), accels_offset.x/100, accels_offset.y/100, accels_offset.z/100);
+	Serial.println();
+      }
+      
+      if(Serial.available() > 0){
+	return (0);
+      }
     }
   }
   
