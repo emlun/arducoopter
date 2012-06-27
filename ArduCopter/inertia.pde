@@ -103,8 +103,8 @@ static void calibrate_accels()
 		Serial.printf("call accels: %1.5f, %1.5f, %1.5f,\n", accels_rotated.x, accels_rotated.y, accels_rotated.z);
 	}
 
-	accels_velocity /= 100;
-	accels_offset = accels_velocity;
+	accels_offset = accels_velocity / 100;
+
 	zero_accels();
 	calc_inertia();
 
