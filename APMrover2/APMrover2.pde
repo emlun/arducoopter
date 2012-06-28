@@ -1,6 +1,6 @@
 /// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
-#define THISFIRMWARE "APMrover v2.20a JL NAUDIN" //New version of the APMrover for the APM v1 or APM v2 and magnetometer + SONAR
+#define THISFIRMWARE "APMrover v2.20b JL NAUDIN" //New version of the APMrover for the APM v1 or APM v2 and magnetometer + SONAR
 
 // This is the APMrover firmware derived from the Arduplane v2.32 by Jean-Louis Naudin (JLN) 
 /*
@@ -14,11 +14,12 @@ modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either
 version 2.1 of the License, or (at your option) any later version.
 //
-// JLN updates: last update 2012-06-13
+// JLN updates: last update 2012-06-21
 // DOLIST:
 //-------------------------------------------------------------------------------------------------------------------------
 // Dev Startup : 2012-04-21
 //
+//  2012-06-21: Update for HIL mode with mavlink 1.0 (new lib)
 //  2012-06-13: use RangeFinder optical SharpGP2Y instead of ultrasonic sonar
 //  2012-06-13: added Test sonar
 //  2012-05-17: added speed_boost during straight line
@@ -895,12 +896,6 @@ static void medium_loop()
             if (g.compass_enabled && compass.read()) {
                 ahrs.set_compass(&compass);
                 // Calculate heading
-#if LITE == DISABLED                
-                Matrix3f m = ahrs.get_dcm_matrix();              
-                compass.calculate(m);
-#else
-                compass.calculate(0,0);  // roll = 0, pitch = 0
-#endif
                 compass.null_offsets();
             } else {
                 ahrs.set_compass(NULL);
@@ -1112,12 +1107,7 @@ static void update_GPS(void)
                   ground_course = ahrs.yaw_sensor;
                 } else {
 #endif                
-    long magheading;
-    magheading = ToDeg(compass.heading) * 100;
-    if (magheading > 36000)	  magheading -= 36000;
-    if (magheading < 0)           magheading += 36000;
-
-    ground_course = magheading;
+    ground_course = ToDeg(ahrs.yaw) * 100;
 #if LITE == DISABLED                  
                 }
 #endif

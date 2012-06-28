@@ -14,6 +14,7 @@
 #include <AP_Compass.h>
 #include <AP_GPS.h>
 #include <AP_IMU.h>
+#include <AP_Baro.h>
 
 #if defined(ARDUINO) && ARDUINO >= 100
 	#include "Arduino.h"
@@ -27,7 +28,8 @@ public:
 	// Constructor
 	AP_AHRS(IMU *imu, GPS *&gps):
 		_imu(imu),
-		_gps(gps)
+		_gps(gps),
+		_barometer(NULL)
 	{
 		// base the ki values by the sensors maximum drift
 		// rate. The APM2 has gyros which are much less drift
@@ -38,9 +40,9 @@ public:
 	}
 
 	// Accessors
-	void		set_centripetal(bool b) { _centripetal = b; }
-	bool		get_centripetal(void) { return _centripetal; }
+	void		set_fly_forward(bool b) { _fly_forward = b; }
 	void		set_compass(Compass *compass) { _compass = compass; }
+	void		set_barometer(AP_Baro *barometer) { _barometer = barometer; }
 
 	// Methods
 	virtual void update(void) = 0;
@@ -95,9 +97,11 @@ protected:
 	//       IMU under us without our noticing.
 	IMU 		*_imu;
 	GPS 		*&_gps;
+	AP_Baro		*_barometer;
 
-	// true if we are doing centripetal acceleration correction
-	bool		_centripetal;
+	// true if we can assume the aircraft will be flying forward
+	// on its X axis
+	bool		_fly_forward;
 
 	// the limit of the gyro drift claimed by the sensors, in
 	// radians/s/s

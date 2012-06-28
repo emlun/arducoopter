@@ -113,10 +113,9 @@ void sitl_update_gps(double latitude, double longitude, float altitude,
         const uint8_t MSG_POSLLH = 0x2;
 	const uint8_t MSG_STATUS = 0x3;
 	const uint8_t MSG_VELNED = 0x12;
-	double lon_scale;
 
-	// 4Hz
-	if (millis() - gps_state.last_update < 250) {
+	// 5Hz, to match the real UBlox config in APM
+	if (millis() - gps_state.last_update < 200) {
 		return;
 	}
 	gps_state.last_update = millis();
@@ -144,8 +143,7 @@ void sitl_update_gps(double latitude, double longitude, float altitude,
 #define sqr(x) ((x)*(x))
 	velned.speed_2d = sqrt(sqr(speedN)+sqr(speedE)) * 100;
 	velned.speed_3d = velned.speed_2d;
-        lon_scale = cos(ToRad(latitude));
-	velned.heading_2d = ToDeg(atan2(lon_scale*speedE, speedN)) * 100000.0;
+	velned.heading_2d = ToDeg(atan2(speedE, speedN)) * 100000.0;
 	if (velned.heading_2d < 0.0) {
 		velned.heading_2d += 360.0 * 100000.0;
 	}

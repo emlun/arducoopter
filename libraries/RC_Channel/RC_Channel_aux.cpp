@@ -5,22 +5,25 @@
 
 const AP_Param::GroupInfo RC_Channel_aux::var_info[] PROGMEM = {
 	AP_NESTEDGROUPINFO(RC_Channel, 0),
+
 	// @Param: FUNCTION
-	// @DisplayName: Function assigned to this APM servo output
+	// @DisplayName: APM servo output function
 	// @Description: Setting this to Disabled(0) will disable this output, any other value will enable the corresponding function
 	// @Values: 0:Disabled,1:Manual,2:Flap,3:Flap_auto,4:Aileron,5:flaperon,6:mount_pan,7:mount_tilt,8:mount_roll,9:mount_open,10:camera_trigger,11:release
 	// @User: Standard
 	AP_GROUPINFO("FUNCTION",       1, RC_Channel_aux, function),
+
 	// @Param: ANGLE_MIN
-	// @DisplayName: Minimum physical angular position of the object that this servo output controls
+	// @DisplayName: Minimum object position
 	// @Description: Minimum physical angular position of the object that this servo output controls, this could be for example a camera pan angle, an aileron angle, etc
 	// @Units: Degrees
 	// @Range: -180 180
 	// @Increment: .01
 	// @User: Standard
 	AP_GROUPINFO("ANGLE_MIN",      2, RC_Channel_aux, angle_min),
+
 	// @Param: ANGLE_MAX
-	// @DisplayName: Maximum physical angular position of the object that this servo output controls
+	// @DisplayName: Maximum object position
 	// @Description: Maximum physical angular position of the object that this servo output controls, this could be for example a camera pan angle, an aileron angle, etc
 	// @Units: Degrees
 	// @Range: -180 180
@@ -30,9 +33,10 @@ const AP_Param::GroupInfo RC_Channel_aux::var_info[] PROGMEM = {
 	AP_GROUPEND
 };
 
-// Global pointer array, indexed by a "RC function enum" and points to the RC channel output assigned to that function/operation
+/// Global pointer array, indexed by a "RC function enum" and points to the RC channel output assigned to that function/operation
 RC_Channel_aux* g_rc_function[RC_Channel_aux::k_nr_aux_servo_functions];
 
+/// saturate to the closest angle limit if outside of min max angle interval
 int16_t
 RC_Channel_aux::closest_limit(int16_t angle)
 {
@@ -69,8 +73,8 @@ RC_Channel_aux::closest_limit(int16_t angle)
 	return angle;
 }
 
-// Gets the RC and integrates and then compares with the servo out angles to limit control input to servo travel.
-// That way the user doesn't get lost. Rotationally.
+/// Gets the RC and integrates and then compares with the servo out angles to limit control input to servo travel.
+/// That way the user doesn't get lost. Rotationally.
 void
 RC_Channel_aux::rc_input(float *control_angle, int16_t angle)
 {
@@ -79,8 +83,8 @@ RC_Channel_aux::rc_input(float *control_angle, int16_t angle)
 	}
 }
 
-// Takes the desired servo angle(deg) and converts to microSeconds for PWM
-// Like this: 45 deg = 2000 us ; -45 deg/1000 us. 1000us/(90*100 deg) = 0.1111111111111
+/// Takes the desired servo angle(deg) and converts to microSeconds for PWM
+/// Like this: 45 deg = 2000 us ; -45 deg/1000 us. 1000us/(90*100 deg) = 0.1111111111111
 void
 RC_Channel_aux::angle_out(int16_t angle)
 {
@@ -94,7 +98,7 @@ RC_Channel_aux::angle_out(int16_t angle)
 	radio_out = (/*_reverse * */ angle * 0.1111111) + 1500;
 }
 
-// map a function to a servo channel and output it
+/// map a function to a servo channel and output it
 void
 RC_Channel_aux::output_ch(unsigned char ch_nr)
 {
@@ -112,10 +116,10 @@ RC_Channel_aux::output_ch(unsigned char ch_nr)
 	_apm_rc->OutputCh(ch_nr, radio_out);
 }
 
-// Update the g_rc_function array of pointers to rc_x channels
-// This is to be done before rc_init so that the channels get correctly initialized.
-// It also should be called periodically because the user might change the configuration and
-// expects the changes to take effect instantly
+/// Update the g_rc_function array of pointers to rc_x channels
+/// This is to be done before rc_init so that the channels get correctly initialized.
+/// It also should be called periodically because the user might change the configuration and
+/// expects the changes to take effect instantly
 void update_aux_servo_function(RC_Channel_aux* rc_5, RC_Channel_aux* rc_6, RC_Channel_aux* rc_7, RC_Channel_aux* rc_8)
 {
 	// positions 0..3 of this array never get used, but this is a stack array, so the entire array gets freed at the end of the function

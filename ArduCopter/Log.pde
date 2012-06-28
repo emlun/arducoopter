@@ -577,7 +577,7 @@ static void Log_Write_Nav_Tuning()
 	DataFlash.WriteByte(LOG_NAV_TUNING_MSG);
 
 	DataFlash.WriteInt(wp_distance);						// 1
-	DataFlash.WriteInt(nav_bearing/100);					// 2
+	DataFlash.WriteInt(target_bearing/100);					// 2
 	DataFlash.WriteInt(long_error);							// 3
 	DataFlash.WriteInt(lat_error);							// 4
 	DataFlash.WriteInt(nav_lon);							// 5
@@ -744,7 +744,7 @@ static void Log_Write_Attitude()
 	DataFlash.WriteInt((int)ahrs.pitch_sensor);		// 4
 	DataFlash.WriteInt(g.rc_4.control_in);			// 5
 	DataFlash.WriteInt((uint16_t)ahrs.yaw_sensor);	// 6
-	DataFlash.WriteInt((uint16_t)(wrap_360(ToDeg(compass.heading)*100)));	// 7
+	DataFlash.WriteInt(0);	// 7 (this used to be compass.heading)
 
 	DataFlash.WriteByte(END_BYTE);
 }

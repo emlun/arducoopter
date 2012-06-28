@@ -79,7 +79,7 @@ get_stabilize_yaw(int32_t target_angle)
 #if FRAME_CONFIG == HELI_FRAME
 	angle_error 		= constrain(angle_error, -4500, 4500);
 #else
-	angle_error 		= constrain(angle_error, -2000, 2000);
+	angle_error 		= constrain(angle_error, -4000, 4000);
 #endif
 
 	// convert angle error to desired Rate:
@@ -253,15 +253,8 @@ get_rate_yaw(int32_t target_rate)
 
 	output 	= p+i+d;
 
-	// output control:
-	#if FRAME_CONFIG == HELI_FRAME
-	int16_t yaw_limit = 4500;
-	#else
-	int16_t yaw_limit = 1400 + abs(g.rc_4.control_in);
-	#endif
-
 	// constrain output
-	output = constrain(output, -yaw_limit, yaw_limit);
+	output = constrain(output, -4500, 4500);
 
 #if LOGGING_ENABLED == ENABLED
 	static int8_t log_counter = 0;					// used to slow down logging of PID values to dataflash
@@ -282,9 +275,10 @@ get_rate_yaw(int32_t target_rate)
 static int16_t
 get_nav_throttle(int32_t z_error)
 {
-	int16_t z_rate_error = 0;
-	int16_t z_target_speed = 0;
-	int16_t output = 0;
+	int16_t z_rate_error, z_target_speed, output;
+
+	// a small boost for alt control to improve takeoff
+	//int16_t boost_p	= constrain(z_error >> 1, -10, 50);
 
 	// convert to desired Rate:
 	z_target_speed 		= g.pi_alt_hold.get_p(z_error);
@@ -307,7 +301,7 @@ get_nav_throttle(int32_t z_error)
 	output =  constrain(g.pid_throttle.get_pid(z_rate_error, .02), -80, 120);
 
 	// output control:
-	return output + i_hold;
+	return output + i_hold; //+ boost_p;
 }
 
 // Keeps old data out of our calculation / logs
@@ -434,15 +428,9 @@ get_nav_yaw_offset(int yaw_input, int reset)
 
 static int16_t get_angle_boost(int16_t value)
 {
-//	float temp = cos_pitch_x * cos_roll_x;
-//	temp = 1.0 - constrain(temp, .5, 1.0);
-//	int16_t output = temp * value;
-//	return constrain(output, 0, 200);
-//	return (int)(temp * value);
-
 	float temp = cos_pitch_x * cos_roll_x;
 	temp = constrain(temp, .5, 1.0);
-	return ((float)g.throttle_cruise / temp) - g.throttle_cruise;
+	return ((float)(g.throttle_cruise + 80) / temp) - (g.throttle_cruise + 80);
 }
 
 #if FRAME_CONFIG == HELI_FRAME

@@ -152,16 +152,31 @@ static NOINLINE void send_extended_status1(mavlink_channel_t chan, uint16_t pack
     // at the moment all sensors/controllers are assumed healthy
     control_sensors_health = control_sensors_present;
 
-    uint16_t battery_remaining = 1000.0 * (float)(g.pack_capacity - current_total1)/(float)g.pack_capacity;	//Mavlink scaling 100% = 1000
+    uint16_t battery_current = -1;
+    uint8_t  battery_remaining = -1;
+
+    if (current_total1 != 0 && g.pack_capacity != 0) {
+        battery_remaining = (100.0 * (g.pack_capacity - current_total1) / g.pack_capacity);
+    }
+    if (current_total1 != 0) {
+        battery_current = current_amps1 * 100;
+    }
+
+    if (g.battery_monitoring == 3) {
+        /*setting a out-of-range value.
+        It informs to external devices that
+        it cannot be calculated properly just by voltage*/
+        battery_remaining = 150;
+    }
 
     mavlink_msg_sys_status_send(
         chan,
         control_sensors_present,
         control_sensors_enabled,
         control_sensors_health,
-        0,
+        0, // CPU Load not supported in AC yet
         battery_voltage1 * 1000, // mV
-        0,
+        battery_current,        // in 10mA units
         battery_remaining,      // in %
         0, // comm drops %,
         0, // comm drops in pkts,
@@ -240,7 +255,7 @@ static void NOINLINE send_nav_controller_output(mavlink_channel_t chan)
         chan,
         nav_roll / 1.0e2,
         nav_pitch / 1.0e2,
-        nav_bearing / 1.0e2,
+        target_bearing / 1.0e2,
         target_bearing / 1.0e2,
         wp_distance / 1.0e2,
         altitude_error / 1.0e2,
@@ -478,7 +493,7 @@ static void NOINLINE send_raw_imu2(mavlink_channel_t chan)
         chan,
         micros(),
         (float)barometer.get_pressure()/100.0,
-        (float)(barometer.get_pressure()-ground_pressure)/100.0,
+        (float)(barometer.get_pressure() - barometer.get_ground_pressure())/100.0,
         (int)(barometer.get_temperature()*10));
 }
 
@@ -991,7 +1006,11 @@ GCS_MAVLINK::send_text(gcs_severity severity, const prog_char_t *str)
 void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
 {
 	struct Location tell_command = {};				// command for telemetry
-	static uint8_t mav_nav = 255;							// For setting mode (some require receipt of 2 messages...)
+
+	#if MAVLINK10 == ENABLED
+	#else
+		static uint8_t mav_nav = 255;							// For setting mode (some require receipt of 2 messages...)
+	#endif
 
 	switch (msg->msgid) {
 
@@ -1846,7 +1865,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
             APM_RC.setHIL(v);
             break;
         }
-        
+
 #if HIL_MODE != HIL_MODE_DISABLED && MAVLINK10 != ENABLED
         // This is used both as a sensor and to pass the location
         // in HIL_ATTITUDE mode. Note that MAVLINK10 uses HIL_STATE
@@ -1858,7 +1877,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
             mavlink_msg_gps_raw_decode(msg, &packet);
 
             // set gps hil sensor
-            g_gps->setHIL(packet.usec/1000.0,packet.lat,packet.lon,packet.alt,
+            g_gps->setHIL(packet.usec/1000,packet.lat,packet.lon,packet.alt,
                           packet.v,packet.hdg,0,0);
             if (gps_base_alt == 0) {
                 gps_base_alt = packet.alt*100;
@@ -1871,7 +1890,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
             }
             break;
         }
-        
+
 #if HIL_MODE == HIL_MODE_ATTITUDE
     case MAVLINK_MSG_ID_ATTITUDE: //30
         {
@@ -1914,21 +1933,21 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
         }
 #endif // HIL_MODE_ATTITUDE
 #endif // HIL_MODE != HIL_MODE_DISABLED && MAVLINK10 != ENABLED
-        
+
 #if MAVLINK10 == ENABLED && HIL_MODE != HIL_MODE_DISABLED
 	case MAVLINK_MSG_ID_HIL_STATE:
 		{
 			mavlink_hil_state_t packet;
 			mavlink_msg_hil_state_decode(msg, &packet);
-			
+
 			float vel = sqrt((packet.vx * (float)packet.vx) + (packet.vy * (float)packet.vy));
 			float cog = wrap_360(ToDeg(atan2(packet.vx, packet.vy)) * 100);
-			
+
             // set gps hil sensor
-            g_gps->setHIL(packet.time_usec/1000.0,
+            g_gps->setHIL(packet.time_usec/1000,
                           packet.lat*1.0e-7, packet.lon*1.0e-7, packet.alt*1.0e-3,
                           vel*1.0e-2, cog*1.0e-2, 0, 10);
-                          
+
             if (gps_base_alt == 0) {
                 gps_base_alt = g_gps->altitude;
             }
@@ -1938,9 +1957,9 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
             if (!home_is_set) {
                 init_home();
             }
-			
+
 			#if HIL_MODE == HIL_MODE_SENSORS
-			
+
 			// rad/sec
             Vector3f gyros;
             gyros.x = (float)packet.xgyro / 1000.0;
@@ -1955,7 +1974,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
             imu.set_gyro(gyros);
 
             imu.set_accel(accels);
-			
+
 			#else
 
 			// set AHRS hil sensor
@@ -1967,7 +1986,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
 			break;
 		}
 #endif //  MAVLINK10 == ENABLED && HIL_MODE != HIL_MODE_DISABLED
-        
+
 /*
 	case MAVLINK_MSG_ID_HEARTBEAT:
 		{
@@ -1987,7 +2006,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
 			mavlink_msg_gps_raw_decode(msg, &packet);
 
 			// set gps hil sensor
-			g_gps->setHIL(packet.usec/1000.0,packet.lat,packet.lon,packet.alt,
+			g_gps->setHIL(packet.usec/1000,packet.lat,packet.lon,packet.alt,
 			packet.v,packet.hdg,0,0);
 			break;
 		}

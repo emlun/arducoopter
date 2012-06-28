@@ -1,6 +1,6 @@
 /// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
-#define THISFIRMWARE "ArduPlane V2.40-beta"
+#define THISFIRMWARE "ArduPlane V2.40"
 /*
 Authors:    Doug Weibel, Jose Julio, Jordi Munoz, Jason Short, Andrew Tridgell, Randy Mackay, Pat Hickey, John Arne Birkeland, Olivier Adler
 Thanks to:  Chris Anderson, Michael Oborne, Paul Mather, Bill Premerlani, James Cohen, JB from rotorFX, Automatik, Fefenin, Peter Meister, Remzibi, Yury Smirnov, Sandro Benigno, Max Levine, Roberto Navoni, Lorenz Meier
@@ -46,6 +46,7 @@ version 2.1 of the License, or (at your option) any later version.
 #include <AP_RangeFinder.h>	// Range finder library
 #include <Filter.h>			// Filter library
 #include <ModeFilter.h>		// Mode Filter from Filter library
+#include <LowPassFilter.h>	// LowPassFilter class (inherits from Filter class)
 #include <AP_Relay.h>       // APM relay
 #include <AP_Camera.h>		// Photo or video camera
 #include <memcheck.h>
@@ -469,8 +470,6 @@ static float   airspeed_pressure;
 ////////////////////////////////////////////////////////////////////////////////
 // Altitude Sensor variables
 ////////////////////////////////////////////////////////////////////////////////
-// Raw absolute pressure measurement (filtered).  ADC units
-static unsigned long 	abs_pressure;
 // Altitude from the sonar sensor.  Meters.  Not yet implemented.
 static int		sonar_alt;
 
@@ -794,9 +793,6 @@ static void medium_loop()
 			#if HIL_MODE != HIL_MODE_ATTITUDE
             if (g.compass_enabled && compass.read()) {
                 ahrs.set_compass(&compass);
-                // Calculate heading
-                Matrix3f m = ahrs.get_dcm_matrix();
-                compass.calculate(m);
                 compass.null_offsets();
             } else {
                 ahrs.set_compass(NULL);

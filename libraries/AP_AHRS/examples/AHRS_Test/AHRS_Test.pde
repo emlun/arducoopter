@@ -24,9 +24,12 @@
 #include <Filter.h>
 
 // uncomment this for a APM2 board
-#define APM2_HARDWARE
+//#define APM2_HARDWARE
 
-FastSerialPort(Serial, 0);
+#define WITH_GPS 0
+
+FastSerialPort0(Serial);
+FastSerialPort1(Serial1);
 
 Arduino_Mega_ISR_Registry isr_registry;
 AP_TimerProcess  scheduler;
@@ -46,11 +49,13 @@ AP_Compass_HMC5843 compass;
 
 static GPS         *g_gps;
 
+AP_GPS_Auto     g_gps_driver(&Serial1, &g_gps);
+
 AP_IMU_INS imu(&ins);
 
 // choose which AHRS system to use
-//AP_AHRS_DCM  ahrs(&imu, g_gps);
-AP_AHRS_Quaternion  ahrs(&imu, g_gps);
+AP_AHRS_DCM  ahrs(&imu, g_gps);
+//AP_AHRS_Quaternion  ahrs(&imu, g_gps);
 
 AP_Baro_BMP085_HIL      barometer;
 
@@ -105,9 +110,14 @@ void setup(void)
 	compass.set_orientation(MAG_ORIENTATION);
 	if (compass.init()) {
 		Serial.printf("Enabling compass\n");
-		compass.null_offsets_enable();
 		ahrs.set_compass(&compass);
+	} else {
+		Serial.printf("No compass detected\n");
 	}
+	g_gps = &g_gps_driver;
+#if WITH_GPS
+	g_gps->init();
+#endif
 }
 
 void loop(void)
@@ -115,6 +125,7 @@ void loop(void)
 	static uint16_t counter;
 	static uint32_t last_t, last_print, last_compass;
 	uint32_t now = micros();
+	float heading = 0;
 
 	if (last_t == 0) {
 		last_t = now;
@@ -124,9 +135,12 @@ void loop(void)
 
 	if (now - last_compass > 100*1000UL &&
 		compass.read()) {
-		compass.calculate(ahrs.get_dcm_matrix());
+		heading = compass.calculate_heading(ahrs.get_dcm_matrix());
 		// read compass at 10Hz
 		last_compass = now;
+#if WITH_GPS
+		g_gps->update();
+#endif
 	}
 
 	ahrs.update();
@@ -141,7 +155,7 @@ void loop(void)
 						ToDeg(drift.x),
 						ToDeg(drift.y),
 						ToDeg(drift.z),
-						compass.use_for_yaw()?ToDeg(compass.heading):0.0,
+						compass.use_for_yaw()?ToDeg(heading):0.0,
 						(1.0e6*counter)/(now-last_print));
 		last_print = now;
 		counter = 0;
