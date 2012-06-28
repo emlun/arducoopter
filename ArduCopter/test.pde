@@ -1295,7 +1295,7 @@ static int8_t test_inav_dump(uint8_t argc, const Menu::arg *argv) {
       }
 
       Vector3f raw_accel = imu.get_accel();
-      Vector3f gyro = imu.get_gyro()*(1.0/100.0/180.0*M_PI); // Transformation from degrees*100 to radians
+      Vector3f gyro = imu.get_gyro();
       
       Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), raw_accel.x, raw_accel.y, raw_accel.z);
       Serial.print("\t");
