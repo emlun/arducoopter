@@ -2072,11 +2072,6 @@ static void update_altitude()
 
 	// calc error
 	climb_rate_error = (climb_rate_actual - climb_rate) / 5;
-
-	#if INERTIAL_NAV == ENABLED
-	// inertial_nav
-	inertial_error_correction();
-	#endif
 }
 
 static void update_altitude_est()

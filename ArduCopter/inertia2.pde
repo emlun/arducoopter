@@ -43,7 +43,12 @@ void calc_inertia()
 }
 
 void inertial_error_correction() {
-  pos_error = -accels_position;
+  
+  pos_error.x =  (float)g_gps->latitude / 11 * 1e-8;
+  pos_error.y =  (float)g_gps->longitude * scaleLongDown  / 11 * 1e-8;
+  pos_error.z = -(float)g_gps->altitude;
+  
+  pos_error -= accels_position;
   
   accels_position      += pos_error * KALMAN_L[0];
   accels_velocity      += pos_error * KALMAN_L[1];
@@ -75,6 +80,10 @@ static void calibrate_accels()
 	accels_offset = -accels_velocity / (100 * G_Dt * 500);
 
 	zero_accels();
+
+        accels_position.x =  (float)g_gps->latitude / 11 * 1e-8;
+        accels_position.y =  (float)g_gps->longitude * scaleLongDown  / 11 * 1e-8;
+        accels_position.z = -(float)g_gps->altitude;
 
 //	Log_Write_Data(25, (float)accels_offset.x);
 //	Log_Write_Data(26, (float)accels_offset.y);

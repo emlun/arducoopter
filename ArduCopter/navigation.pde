@@ -57,8 +57,8 @@ static void calc_XY_velocity(){
 	}
 
 	#if INERTIAL_NAV == ENABLED
-	// inertial_nav
-	inertial_error_correction();
+	  // inertial_nav
+	  inertial_error_correction();
 	#endif
 
 	current_loc.lng = xLeadFilter.get_position(g_gps->longitude, x_actual_speed);
