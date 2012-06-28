@@ -835,17 +835,20 @@ static float G_Dt		= 0.02;
 // Inertial Navigation
 ////////////////////////////////////////////////////////////////////////////////
 #if INERTIAL_NAV == ENABLED
-// The rotated accelerometer values [cm/s]
-static Vector3f accels_velocity;
-
 // accels rotated to world frame [m/s^2]
 static Vector3f accels_rotated;
 
-// error correction
-static Vector3f speed_error;
+// Error correction
+static Vector3f pos_error;;
 
 // Manage accel drift [m/s^2]
 static Vector3f accels_offset;
+
+// Accelerometer values [m/s^2]
+static Vector3f accels_acceleration;
+
+// Integrated velocity [cm/s]
+static Vector3f accels_velocity;
 
 // Integrated position [cm]
 static Vector3f accels_position;
