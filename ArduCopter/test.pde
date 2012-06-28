@@ -37,6 +37,7 @@ static int8_t	test_rawgps(uint8_t argc, 		const Menu::arg *argv);
 //static int8_t	test_mission(uint8_t argc, 		const Menu::arg *argv);
 static int8_t   test_vel(uint8_t argc,                  const Menu::arg *argv);
 static int8_t   test_led(uint8_t argc,                  const Menu::arg *argv);
+static int8_t   test_inav_dump(uint8_t argc,      const Menu::arg *argv);
 
 // this is declared here to remove compiler errors
 extern void		print_latlon(BetterStream *s, int32_t lat_or_lon);	// in Log.pde
@@ -93,6 +94,7 @@ const struct Menu::command test_menu_commands[] PROGMEM = {
 	//{"wp",			test_wp_nav},
 	{"vel",                 test_vel},
 	{"led",                 test_led},
+	{"inav_dump",     test_inav_dump},
 };
 
 // A Macro to create the Menu
@@ -1219,7 +1221,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
           Serial.print("\t");
           Serial.printf_P(PSTR("Velocity: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
           Serial.print("\t");
-          Serial.printf_P(PSTR("Offset: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_offset.x/100, accels_offset.y/100, accels_offset.z/100);
+          Serial.printf_P(PSTR("Offset: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_offset.x, accels_offset.y, accels_offset.z);
           Serial.println();
       }
       
@@ -1261,6 +1263,70 @@ static int8_t test_led(uint8_t argc, const Menu::arg *argv) {
       return (0);
     }
   }
+}
+
+static int8_t test_inav_dump(uint8_t argc, const Menu::arg *argv) {
+  
+#if INERTIAL_NAV == ENABLED
+  
+  calibrate_accels();
+  
+  unsigned long fast_loopTimer = millis();
+  float delta_ms_fast_loop;
+
+  byte counter = 0;
+  
+  Serial.println();
+  Serial.println("The output is on the following format, where each property consists of three (3) values unless otherwise specified.");
+  Serial.println("All quantities are in SI units (angles in radians) unless otherwise specified.");
+  Serial.println("Raw Accelerometer\tRaw Gyro\tRotated Accelerometer\tVelocity\tPosition\tAccelerometer offset");
+  Serial.println();
+
+  print_hit_enter();
+
+  delay(1000);
+  
+  while(1) {
+    
+    if (millis() - fast_loopTimer > 9) {
+      delta_ms_fast_loop = millis() - fast_loopTimer;
+      fast_loopTimer = millis();
+      G_Dt = (float)delta_ms_fast_loop / 1000.f;
+      
+      read_AHRS();
+      calc_inertia();
+
+      counter++;
+      if(counter == 10) {
+          inertial_error_correction();
+          counter = 0;
+      }
+
+      Vector3f raw_accel = imu.get_accel();
+      Vector3f gyro = imu.get_gyro()*(1.0/100.0/180.0*M_PI); // Transformation from degrees*100 to radians
+      
+      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), raw_accel.x, raw_accel.y, raw_accel.z);
+      Serial.print("\t");
+      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), gyro.x, gyro.y, gyro.z);
+      Serial.print("\t");
+      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_rotated.x, accels_rotated.y, accels_rotated.z);
+      Serial.print("\t");
+      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
+      Serial.print("\t");
+      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
+      Serial.print("\t");
+      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_offset.x, accels_offset.y, accels_offset.z);
+      Serial.println();
+      
+      if(Serial.available() > 0){
+	return (0);
+      }
+    }
+  }
+  
+#else
+  Serial.println("Inertial navigation is disabled. Exiting.");
+#endif
 }
 
 static void print_hit_enter()

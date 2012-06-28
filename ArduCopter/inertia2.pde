@@ -69,7 +69,6 @@ static void calibrate_accels()
 		delay(G_Dt * 1000);
 		read_AHRS();
 		calc_inertia();
-		Serial.printf("call accels:\t%+1.5f\t%+1.5f\t%+1.5f\n", accels_rotated.x, accels_rotated.y, accels_rotated.z);
 	}
 
         // Integrate 100*a for 500*G_dt => a = int/(100*G_Dt*5)
