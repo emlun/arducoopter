@@ -1,8 +1,4 @@
-#if INERTIAL_NAV == ENABLED && 0
-
-Vector3f pos_error;
-
-float KALMAN_L[3] = {0.06, 0.02, 0.0002}; // Found using a MATLAB script
+#if INERTIAL_NAV == ENABLED
 
 // generates a new location and velocity in space based on inertia
 // Calc 100 hz
@@ -32,18 +28,6 @@ void calc_inertia()
 	// Integrate accels to get the velocity
 	// ------------------------------------
 	accels_velocity			+= temp;
-        
-        // Integrate velocity to get the position
-	// ------------------------------------
-        temp = accels_velocity * G_Dt; 
-        accels_position                 += temp;
-
-void inertial_error_correction() {
-  pos_error = -accels_position;
-  
-  accels_position += pos_error * KALMAN_L[0];
-  accels_velocity += pos_error * KALMAN_L[1];
-  accels_offset += pos_error * KALMAN_L[2];
 }
 
 void z_error_correction()
@@ -64,12 +48,12 @@ void xy_error_correction()
 	// correct integrated velocity by speed_error
 	// this number must be small or we will bring back sensor latency
 	// -------------------------------------------
-	accels_velocity.x	+= speed_error.x * 0.0175;								 g.speed_correction_x;
+	accels_velocity.x	+= speed_error.x * 0.0175;								// g.speed_correction_x;
 	accels_velocity.y	+= speed_error.y * 0.0175;
 
 	// Error correct the accels to deal with calibration, drift and noise
 	// ------------------------------------------------------------------
-	accels_velocity.x	-= g.pid_loiter_rate_lon.get_integrator() * 0.007; 		//g.loiter_offset_correction; //.001;
+	accels_velocity.x	-= g.pid_loiter_rate_lon.get_integrator() * 0.007; 		// g.loiter_offset_correction; //.001;
 	accels_velocity.y	-= g.pid_loiter_rate_lat.get_integrator() * 0.007; 		// g.loiter_offset_correction; //.001;
 
 	// update our accel offsets
@@ -89,7 +73,9 @@ static void calibrate_accels()
 	// sets accels_velocity to 0,0,0
 	zero_accels();
 
-	accels_offset.zero();
+	accels_offset.x = 0;
+	accels_offset.y = 0;
+	accels_offset.z = 0;
 
 	for (int i = 0; i < 200; i++){
 		delay(10);
@@ -103,8 +89,8 @@ static void calibrate_accels()
 		Serial.printf("call accels: %1.5f, %1.5f, %1.5f,\n", accels_rotated.x, accels_rotated.y, accels_rotated.z);
 	}
 
-	accels_offset = accels_velocity / 100;
-
+	accels_velocity /= 100;
+	accels_offset = accels_velocity;
 	zero_accels();
 	calc_inertia();
 
@@ -115,9 +101,13 @@ static void calibrate_accels()
 
 void zero_accels()
 {
-  accels_rotated.zero();
-  accels_velocity.zero();
-  accels_position.zero();
+	accels_rotated.x 	= 0;
+	accels_rotated.y 	= 0;
+	accels_rotated.z 	= 0;
+
+	accels_velocity.x 	= 0;
+	accels_velocity.y 	= 0;
+	accels_velocity.z 	= 0;
 }
 
 
