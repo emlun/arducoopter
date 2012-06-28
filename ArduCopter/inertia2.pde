@@ -21,7 +21,6 @@ void calc_inertia()
 	// rotate accels based on DCM
 	// --------------------------
 	accels_rotated		= ahrs.get_dcm_matrix() * imu.get_accel();
-	accels_rotated		+= accels_offset;						// skew accels to account for long term error using calibration
 
 	// rising 		= 2
 	// neutral 		= 0
