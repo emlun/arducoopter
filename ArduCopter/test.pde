@@ -1216,7 +1216,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
           Serial.print("\t");
           Serial.printf_P(PSTR("Velocity: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
           Serial.print("\t");
-          Serial.printf_P(PSTR("Offset: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_offset.x/100, accels_offset.y/100, accels_offset.z/100);
+          Serial.printf_P(PSTR("Offset: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_offset.x, accels_offset.y, accels_offset.z);
           Serial.println();
       }
       
