@@ -72,7 +72,6 @@ static void calibrate_accels()
 		delay(10);
 		read_AHRS();
 		calc_inertia();
-		Serial.printf("call accels: %1.5f, %1.5f, %1.5f,\n", accels_rotated.x, accels_rotated.y, accels_rotated.z);
 	}
 
 	accels_offset = accels_velocity / 100;
