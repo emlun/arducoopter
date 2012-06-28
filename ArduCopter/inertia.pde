@@ -1,4 +1,4 @@
-#if INERTIAL_NAV == ENABLED
+#if INERTIAL_NAV == ENABLED && 0
 
 // generates a new location and velocity in space based on inertia
 // Calc 100 hz
