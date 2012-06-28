@@ -5,6 +5,7 @@
  * the position received from an external positioning system and
  * x_{est} is the position estimated by inertial navigation.
  **/
+Vector3f pos_error;
 
 static float KALMAN_L[] =  
 {
@@ -33,11 +34,11 @@ void calc_inertia()
 
         // Temporary storage for the offset-corrected value of the moast recent
         // value from the accelerometers
-        Vector3f corr_acc = accels_offset+accels_rotated
+        Vector3f corr_acc = accels_offset+accels_rotated;
 
-        // Update position and velocity using trapizodial integration of the accelerometers
-        accels_position    += G_Dt * (accels_velocity + G_Dt / 3 * 100 * (accels_acceleration + corr_acc / 2));
-        accels_velocity    += G_Dt / 2 * 100 * (accels_acceleration + corr_acc);
+        // Update position and velocity using trapezodial integration of the accelerometers
+        accels_position    += (accels_velocity + (accels_acceleration + corr_acc / 2) * G_Dt / 3 * 100) * G_Dt;
+        accels_velocity    += (accels_acceleration + corr_acc) * G_Dt / 2 * 100;
         accels_acceleration = corr_acc;
 }
 
@@ -71,7 +72,7 @@ static void calibrate_accels()
 	}
 
         // Integrate 100*a for 500*G_dt => a = int/(100*G_Dt*5)
-	accels_offset = accels_velocity / (100 * G_Dt * 5);
+	accels_offset = -accels_velocity / (100 * G_Dt * 500);
 
 	zero_accels();
 

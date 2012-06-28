@@ -838,8 +838,8 @@ static float G_Dt		= 0.02;
 // accels rotated to world frame [m/s^2]
 static Vector3f accels_rotated;
 
-// Error correction
-static Vector3f pos_error;;
+// error correction
+static Vector3f speed_error;
 
 // Manage accel drift [m/s^2]
 static Vector3f accels_offset;
