@@ -7,17 +7,21 @@
  **/
 Vector3f pos_error;
 
-float KALMAN_L[3] = {0.12, 0.06, 0.00001}; // Found using a MATLAB script
+static float KALMAN_L[] =  
+{
+   0.093225584382033,
+   0.042453254774675,
+   0.000095444853834,
+   0.000095444853834
+}; // Found using a MATLAB script
 
-// generates a new location and velocity in space based on inertia
+// Generates a new location and velocity in space based on inertia
 // Calc 100 hz
 void calc_inertia()
 {
 	// rotate accels based on DCM
 	// --------------------------
 	accels_rotated		= ahrs.get_dcm_matrix() * imu.get_accel();
-	accels_rotated		+= accels_offset;						// skew accels to account for long term error using calibration
-	//accels_rotated.z 	+= 9.805;								// remove influence of gravity
 
 	// rising 		= 2
 	// neutral 		= 0
@@ -28,67 +32,62 @@ void calc_inertia()
 	// ACC X POS = going North
 	// ACC Z POS = going DOWN (lets flip this)
 
+        // Temporary storage for the offset-corrected value of the moast recent
+        // value from the accelerometers
+        Vector3f corr_acc = accels_offset+accels_rotated;
 
-	// Integrate velocity to get the position
-	// --------------------------------------
-
-	Vector3f temp = accels_velocity * G_Dt;
-
-	accels_position += temp;
-
-	// Integrate accels to get the velocity
-	// ------------------------------------
-	temp = accels_rotated * (G_Dt * 100);
-	//temp.z = -temp.z;
-	// Temp is changed to world frame and we can use it normaly
-
-	// Integrate accels to get the velocity
-	// ------------------------------------
-	accels_velocity			+= temp;
-
+        // Update position and velocity using trapezodial integration of the accelerometers
+        accels_position    += (accels_velocity + (accels_acceleration + corr_acc / 2) * G_Dt / 3 * 100) * G_Dt;
+        accels_velocity    += (accels_acceleration + corr_acc) * G_Dt / 2 * 100;
+        accels_acceleration = corr_acc;
 }
 
 void inertial_error_correction() {
   pos_error = -accels_position;
   
-  accels_position += pos_error * KALMAN_L[0];
-  accels_velocity += pos_error * KALMAN_L[1];
-  accels_offset += pos_error * KALMAN_L[2];
+  accels_position      += pos_error * KALMAN_L[0];
+  accels_velocity      += pos_error * KALMAN_L[1];
+  accels_acceleration  += pos_error * KALMAN_L[2];
+  accels_offset        += pos_error * KALMAN_L[3];
 }
 
 static void calibrate_accels()
 {
-	// sets accels_velocity to 0,0,0
-	zero_accels();
+	
 
-	accels_offset.zero();
-
+        // Unknown purpose, maybe stabilize AHRS?
 	for (int i = 0; i < 200; i++){
 		delay(10);
 		read_AHRS();
 	}
 
-	for (int i = 0; i < 100; i++){
-		delay(10);
+        // sets accels_velocity to 0,0,0
+	zero_accels();
+	accels_offset.zero();
+
+	for (int i = 0; i < 500; i++){
+		delay(G_Dt * 1000);
 		read_AHRS();
 		calc_inertia();
 	}
 
-	accels_offset = accels_velocity / 100;
+        // Integrate 100*a for 500*G_dt => a = int/(100*G_Dt*5)
+	accels_offset = -accels_velocity / (100 * G_Dt * 500);
 
 	zero_accels();
-	calc_inertia();
 
-	Log_Write_Data(25, (float)accels_offset.x);
-	Log_Write_Data(26, (float)accels_offset.y);
-	Log_Write_Data(27, (float)accels_offset.z);
+//	Log_Write_Data(25, (float)accels_offset.x);
+//	Log_Write_Data(26, (float)accels_offset.y);
+//	Log_Write_Data(27, (float)accels_offset.z);
 }
 
 void zero_accels()
 {
   accels_rotated.zero();
-  accels_velocity.zero();
+  
   accels_position.zero();
+  accels_velocity.zero();
+  accels_acceleration.zero();
 }
 
 

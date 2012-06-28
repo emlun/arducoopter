@@ -1184,6 +1184,11 @@ static int8_t
 static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
   
 #if INERTIAL_NAV == ENABLED
+
+  imu.init(IMU::COLD_START, delay, flash_leds, &timer_scheduler);
+	imu.init_accel(delay, flash_leds);
+	print_accel_offsets();
+	report_imu();
   
   calibrate_accels();
   
