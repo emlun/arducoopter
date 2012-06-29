@@ -1185,10 +1185,16 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
   
 #if INERTIAL_NAV == ENABLED
 
-  while(!nav_ok)
+  print_hit_enter();
+
+  while(g_gps->status() != GPS::GPS_OK)
   {
     delay(250);
     Serial.printf_P(PSTR("Waiting for GPS...\n"));
+
+    if(Serial.available() > 0) {
+      return 0;
+    }
   }
 
   imu.init(IMU::COLD_START, delay, flash_leds, &timer_scheduler);
@@ -1198,8 +1204,6 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
   
   calibrate_accels();
   
-  print_hit_enter();
-
   unsigned long fast_loopTimer = millis();
   float delta_ms_fast_loop;
 
