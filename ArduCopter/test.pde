@@ -1280,6 +1280,13 @@ static int8_t test_inav_dump(uint8_t argc, const Menu::arg *argv) {
   
 #if INERTIAL_NAV == ENABLED
   
+  Serial.println();
+  Serial.println("The output is on the following format, where each property consists of three (3) values unless otherwise specified.");
+  Serial.println("All quantities are in SI units (angles in radians) unless otherwise specified.");
+  Serial.println("Time (1) [micros]\tRaw Accelerometer\tRaw Gyro\tRotated Accelerometer\tVelocity\tPosition\tAccelerometer offset\tPosition, from external system");
+  Serial.println();
+
+  Serial.println("Calibrating accelerometers...");
   calibrate_accels();
   
   unsigned long fast_loopTimer = millis();
@@ -1287,12 +1294,6 @@ static int8_t test_inav_dump(uint8_t argc, const Menu::arg *argv) {
 
   byte counter = 0;
   
-  Serial.println();
-  Serial.println("The output is on the following format, where each property consists of three (3) values unless otherwise specified.");
-  Serial.println("All quantities are in SI units (angles in radians) unless otherwise specified.");
-  Serial.println("Raw Accelerometer\tRaw Gyro\tRotated Accelerometer\tVelocity\tPosition\tAccelerometer offset");
-  Serial.println();
-
   print_hit_enter();
 
   delay(1000);
@@ -1309,13 +1310,17 @@ static int8_t test_inav_dump(uint8_t argc, const Menu::arg *argv) {
 
       counter++;
       if(counter == 10) {
+	  g_gps->update();
           inertial_error_correction();
           counter = 0;
       }
 
       Vector3f raw_accel = imu.get_accel();
       Vector3f gyro = imu.get_gyro();
-      
+      Vector3f ext_pos = get_external_position();
+
+      Serial.print(millis());
+      Serial.print("\t");
       Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), raw_accel.x, raw_accel.y, raw_accel.z);
       Serial.print("\t");
       Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), gyro.x, gyro.y, gyro.z);
@@ -1327,6 +1332,8 @@ static int8_t test_inav_dump(uint8_t argc, const Menu::arg *argv) {
       Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
       Serial.print("\t");
       Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_offset.x, accels_offset.y, accels_offset.z);
+      Serial.print("\t");
+      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), ext_pos.x/100, ext_pos.y/100, ext_pos.z/100);
       Serial.println();
       
       if(Serial.available() > 0){
