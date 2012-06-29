@@ -1186,15 +1186,18 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 #if INERTIAL_NAV == ENABLED
 
 	// Wait for GPS to acquire
-	Serial.printf_P(PSTR("Waiting for GPS...\n"));
-	print_hit_enter();
+	Serial.println("Waiting for GPS...");
+	Serial.println("Press ENTER to skip.");
 
 	while(g_gps->status() != GPS::GPS_OK)
 	{
 		delay(250);
 
 		if(Serial.available() > 0) {
-			return 0;
+		  while(Serial.available()) {
+		    Serial.read();
+		  }
+		  break;
 		}
 	}
 
