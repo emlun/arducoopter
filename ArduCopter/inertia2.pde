@@ -28,8 +28,8 @@ void calc_inertia()
 	// falling 		= -2
 
 
-	// ACC Y POS = going EAST
 	// ACC X POS = going North
+	// ACC Y POS = going EAST
 	// ACC Z POS = going DOWN (lets flip this)
 
         // Temporary storage for the offset-corrected value of the moast recent
