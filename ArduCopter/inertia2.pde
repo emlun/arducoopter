@@ -44,7 +44,7 @@ void calc_inertia()
 
 void inertial_error_correction() {
   
-  pos_error = gps_to_cartesian();
+  pos_error = get_external_position();
   
   pos_error -= accels_position;
   
@@ -63,6 +63,9 @@ static void calibrate_accels()
 		delay(10);
 		read_AHRS();
 	}
+	
+	g_gps->update();
+	set_external_position_origin();
 
         // sets accels_velocity to 0,0,0
 	zero_accels();
@@ -79,16 +82,43 @@ static void calibrate_accels()
 
 	zero_accels();
 
-	accels_position = gps_to_cartesian();
+	accels_position = get_external_position();
 
 //	Log_Write_Data(25, (float)accels_offset.x);
 //	Log_Write_Data(26, (float)accels_offset.y);
 //	Log_Write_Data(27, (float)accels_offset.z);
 }
 
-static inline Vector3f gps_to_cartesian() {
-  return Vector3f((float)(g_gps->latitude - inertial_origin_latitude)*1.1, (float)(g_gps->longitude - inertial_origin_longitude) * scaleLongDown * 1.1, -(float)g_gps->altitude);
+/**
+ * Returns the position of the craft as specified by an external
+ * positioning system such as GPS.
+ **/
+static inline Vector3f get_external_position() {
+  return gps_to_cartesian();
 }
+static inline void set_external_position_origin() {
+  set_gps_origin();
+}
+
+//////////////////////////////////////////////////
+// EXTERNAL POSITIONING SYSTEM: GPS
+/**
+ * gps_origin is set during calibration to the current position, and
+ * all inertial navigation thereafter uses this position as the origin
+ * of the local coordinate system.
+ **/
+long gps_origin_latitude;
+long gps_origin_longitude;
+long gps_origin_altitude;
+static inline Vector3f gps_to_cartesian() {
+  return Vector3f((float)(g_gps->latitude - gps_origin_latitude)*1.1, (float)(g_gps->longitude - gps_origin_longitude) * scaleLongDown * 1.1, -(float)g_gps->altitude - gps_origin_altitude);
+}
+static inline void set_gps_origin() {
+  gps_origin_latitude = g_gps -> latitude;
+  gps_origin_longitude = g_gps -> longitude;
+  gps_origin_altitude = g_gps -> altitude;
+}
+//////////////////////////////////////////////////
 
 void zero_accels()
 {
