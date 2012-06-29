@@ -44,9 +44,7 @@ void calc_inertia()
 
 void inertial_error_correction() {
   
-  pos_error.x =  (float)g_gps->latitude / 11 * 1e-8;
-  pos_error.y =  (float)g_gps->longitude * scaleLongDown  / 11 * 1e-8;
-  pos_error.z = -(float)g_gps->altitude;
+  pos_error = gps_to_cartesian();
   
   pos_error -= accels_position;
   
@@ -81,13 +79,15 @@ static void calibrate_accels()
 
 	zero_accels();
 
-        accels_position.x =  (float)g_gps->latitude / 11 * 1e-8;
-        accels_position.y =  (float)g_gps->longitude * scaleLongDown  / 11 * 1e-8;
-        accels_position.z = -(float)g_gps->altitude;
+	accels_position = gps_to_cartesian();
 
 //	Log_Write_Data(25, (float)accels_offset.x);
 //	Log_Write_Data(26, (float)accels_offset.y);
 //	Log_Write_Data(27, (float)accels_offset.z);
+}
+
+static inline Vector3f gps_to_cartesian() {
+  return Vector3f((float)(g_gps->latitude - inertial_origin_latitude)*1.1, (float)(g_gps->longitude - inertial_origin_longitude) * scaleLongDown * 1.1, -(float)g_gps->altitude);
 }
 
 void zero_accels()
