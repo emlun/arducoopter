@@ -1185,62 +1185,87 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
   
 #if INERTIAL_NAV == ENABLED
 
-  print_hit_enter();
+	// Wait for GPS to acquire
+	Serial.printf_P(PSTR("Waiting for GPS...\n"));
+	print_hit_enter();
 
-  while(g_gps->status() != GPS::GPS_OK)
-  {
-    delay(250);
-    Serial.printf_P(PSTR("Waiting for GPS...\n"));
+	while(g_gps->status() != GPS::GPS_OK)
+	{
+		delay(250);
 
-    if(Serial.available() > 0) {
-      return 0;
-    }
-  }
+		if(Serial.available() > 0) {
+			return 0;
+		}
+	}
 
-  imu.init(IMU::COLD_START, delay, flash_leds, &timer_scheduler);
+	// Initialize the AHRS
+	imu.init(IMU::COLD_START, delay, flash_leds, &timer_scheduler);
 	imu.init_accel(delay, flash_leds);
 	print_accel_offsets();
 	report_imu();
   
-  calibrate_accels();
+	// This also sets the INS origin position
+	calibrate_accels();
   
-  unsigned long fast_loopTimer = millis();
-  float delta_ms_fast_loop;
-
-  byte counter = 0;
+	// INS loop
+	unsigned long fast_loopTimer = micros();
+	byte counter = 0;
   
-  while(1) {
-    
-    if (millis() - fast_loopTimer > 9) {
-      delta_ms_fast_loop = millis() - fast_loopTimer;
-      fast_loopTimer = millis();
-      G_Dt = (float)delta_ms_fast_loop / 1000.f;
-      
-      read_AHRS();
-      calc_inertia();
+	while(1) {
+  
+		uint32_t timer = micros();
 
-      counter++;
-      if(counter == 10) {
-        
-          g_gps->update();
-        
-          inertial_error_correction();
-
-          Serial.printf_P(PSTR("Position: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
-          Serial.print("\t");
-          Serial.printf_P(PSTR("Velocity: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
-          Serial.print("\t");
-          Serial.printf_P(PSTR("Offset: [x: %+1.3f\ty: %+1.3f\tz: %+1.3f]"), accels_offset.x, accels_offset.y, accels_offset.z);
-          Serial.println();
-          
-          counter = 0;
-      }
+		// 100Hz loop
+		if ((timer - fast_loopTimer) >= 10000 && imu.new_data_available()) {
+			
+			// Update delta_T to match reality
+			G_Dt 				= (float)(timer - fast_loopTimer) / 1000000.f;		// used by PI Loops
+			fast_loopTimer 		= timer;
       
-      if(Serial.available() > 0){
-	return (0);
-      }
+			// This updates the DCM and integrates accelerometers
+			read_AHRS();
+			calc_inertia();
+			
+			// GPS corrections and data printing occures at 10Hz
+			counter++;
+			if(counter == 10) {
+				
+				// Refresh the GPS data
+				g_gps->update();
+			
+				// Correct INS errors
+				inertial_error_correction();
+				
+				// Large block to print states to serial
+				Vector3f raw_accel = imu.get_accel();
+				Vector3f gyro = imu.get_gyro();
+				Vector3f ext_pos = get_external_position();
+
+				Serial.print(millis());
+				Serial.print("\t");
+				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), raw_accel.x, raw_accel.y, raw_accel.z);
+				Serial.print("\t");
+				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), gyro.x, gyro.y, gyro.z);
+				Serial.print("\t");
+				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_rotated.x, accels_rotated.y, accels_rotated.z);
+				Serial.print("\t");
+				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
+				Serial.print("\t");
+				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
+				Serial.print("\t");
+				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_offset.x, accels_offset.y, accels_offset.z);
+				Serial.print("\t");
+				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), ext_pos.x/100, ext_pos.y/100, ext_pos.z/100);
+				Serial.println();
+			  
+				counter = 0;
+			}
+        }
+		
+		if(Serial.available() > 0){
+			return (0);
+		}
     }
-  }
   
 #else
   Serial.println("Inertial navigation is disabled. Exiting.");
