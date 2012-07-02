@@ -1207,9 +1207,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 				Serial.println("Using MATLAB log...");
 			}
 			
-			while(Serial.available()) {
-				Serial.read();
-			}
+			clear_serial();
 			break;
 		}
 	}
@@ -1232,9 +1230,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 			}
 			Serial.printf_P(PSTR("Printing with rate 20/%u\n"),rate);
 			
-			while(Serial.available()) {
-				Serial.read();
-			}
+			clear_serial();
 			break;
 		}
 	}
@@ -1250,9 +1246,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 		delay(250);
 
 		if(Serial.available() > 0) {
-			while(Serial.available()) {
-				Serial.read();
-			}
+		        clear_serial();
 			break;
 		}
 	}
