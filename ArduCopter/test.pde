@@ -1277,6 +1277,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 		while(1){
 			delay(250);
 			if(Serial.available() > 0) {
+			        clear_serial();
 				break;
 			}
 		}
@@ -1359,10 +1360,11 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 				}
 			}
 		}
-	}
+
+		if(Serial.available() > 0){
+		  return (0);
+		}
 		
-	if(Serial.available() > 0){
-		return (0);
 	}
 	
 	#else
@@ -1406,6 +1408,12 @@ static void print_hit_enter()
 static void print_test_disabled()
 {
 	Serial.printf_P(PSTR("Sorry, not 1280 compat.\n"));
+}
+
+static inline void clear_serial() {
+  while(Serial.available()) {
+    Serial.read();
+  }
 }
 
 /*
