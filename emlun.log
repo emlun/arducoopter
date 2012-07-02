@@ -1,3 +1,12 @@
+2012-07-02
+Tweaked inertial navigation parameters a bit, took the circuit for
+another walk and did some more tests on inertial navigation. After all,
+inertial navigation might actually improve the quadrotor's ability to
+stabilize and hover at a given location. The test results this time did
+indicate that inertial navigation gives a not-so-bad indication of small
+scale movements.
+Read a little about the Kalman filter.
+
 2012-06-29
 (Log written 2012-07-02)
 Added inclusion of position data from external positioning system to
