@@ -58,7 +58,7 @@ static void calibrate_accels()
 {
 	
 
-        // Unknown purpose, maybe stabilize AHRS?
+    // Unknown purpose, maybe stabilize AHRS?
 	for (int i = 0; i < 200; i++){
 		delay(10);
 		read_AHRS();
@@ -67,7 +67,7 @@ static void calibrate_accels()
 	g_gps->update();
 	set_external_position_origin();
 
-        // sets accels_velocity to 0,0,0
+    // sets accels_velocity to 0,0,0
 	zero_accels();
 	accels_offset.zero();
 
@@ -77,7 +77,7 @@ static void calibrate_accels()
 		calc_inertia();
 	}
 
-        // Integrate 100*a for 500*G_dt => a = int/(100*G_Dt*5)
+    // Integrate 100*a for 500*G_dt => a = int/(100*G_Dt*5)
 	accels_offset = -accels_velocity / (100 * G_Dt * 500);
 
 	zero_accels();

@@ -37,7 +37,6 @@ static int8_t	test_rawgps(uint8_t argc, 		const Menu::arg *argv);
 //static int8_t	test_mission(uint8_t argc, 		const Menu::arg *argv);
 static int8_t   test_vel(uint8_t argc,                  const Menu::arg *argv);
 static int8_t   test_led(uint8_t argc,                  const Menu::arg *argv);
-static int8_t   test_inav_dump(uint8_t argc,      const Menu::arg *argv);
 
 // this is declared here to remove compiler errors
 extern void		print_latlon(BetterStream *s, int32_t lat_or_lon);	// in Log.pde
@@ -94,7 +93,6 @@ const struct Menu::command test_menu_commands[] PROGMEM = {
 	//{"wp",			test_wp_nav},
 	{"vel",                 test_vel},
 	{"led",                 test_led},
-	{"inav_dump",     test_inav_dump},
 };
 
 // A Macro to create the Menu
@@ -1185,6 +1183,64 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
   
 #if INERTIAL_NAV == ENABLED
 
+	int value = 0;		// Data from serial
+	byte format_log;	// Logging format, 0 == MATLAB
+	int rate = 1;		// Logging decimation factor
+	
+	// Let the user decide on logging format (ie MATLAB or human friendly).
+	// Also let the user choose the rate (every loop <-> every 20th loop)
+	Serial.println("Enter 1 to log in a human readable format...");
+	while(1){
+	
+		delay(250);
+		
+		if( Serial.available() ) {
+		
+			value = Serial.read();
+			
+			if(value == '1'){
+				format_log = 1;
+				Serial.println("Using human readable log...");
+			}
+			else{
+				format_log = 0;
+				Serial.println("Using MATLAB log...");
+			}
+			
+			while(Serial.available()) {
+				Serial.read();
+			}
+			break;
+		}
+	}
+	
+	Serial.println("Choose log decimation (max 9)...");
+	while(1){
+	
+		delay(250);
+
+		if( Serial.available() ) {
+			value = Serial.read();
+			value -= 48;		// ASCII 0 == 48
+			
+			if(value>9||value<1) {
+				Serial.printf_P(PSTR("Received decimation factor %u\n"),value);
+				rate = 9;
+			}
+			else{
+				rate = value;
+			}
+			Serial.printf_P(PSTR("Printing with rate 20/%u\n"),rate);
+			
+			while(Serial.available()) {
+				Serial.read();
+			}
+			break;
+		}
+	}
+	
+	// All preparations are done.
+	
 	// Wait for GPS to acquire
 	Serial.println("Waiting for GPS...");
 	Serial.println("Press ENTER to skip.");
@@ -1194,10 +1250,10 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 		delay(250);
 
 		if(Serial.available() > 0) {
-		  while(Serial.available()) {
-		    Serial.read();
-		  }
-		  break;
+			while(Serial.available()) {
+				Serial.read();
+			}
+			break;
 		}
 	}
 
@@ -1213,6 +1269,24 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 	// INS loop
 	unsigned long fast_loopTimer = micros();
 	byte counter = 0;
+	
+	if(format_log == 0){
+		Serial.println("MAKE SURE TO START LOGGING!");
+		Serial.println("Press enter to start readout");
+		
+		while(1){
+			delay(250);
+			if(Serial.available() > 0) {
+				break;
+			}
+		}
+		
+		// Print a useful header if we are logging to MATLAB
+		Serial.println();
+		Serial.println("The output is on the following format, where each property consists of three (3) values unless otherwise specified.");
+		Serial.println("All quantities are in SI units (angles in radians) unless otherwise specified.");
+		Serial.println("Time [micros]\tARx\tARy\tARz\tGRx\tGRy\tGRz\tAx\tAy\tAz\tVx\tVy\tVz\tPx\tPy\tPz\tAOx\tAOy\tAOz\tPEx\tPEy\tPEz");
+	}
   
 	while(1) {
   
@@ -1229,7 +1303,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 			read_AHRS();
 			calc_inertia();
 			
-			// GPS corrections and data printing occures at 10Hz
+			// GPS corrections and data printing occures at 5Hz
 			counter++;
 			if(counter == 20) {
 				
@@ -1242,30 +1316,58 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 				// Large block to print states to serial
 				Vector3f ext_pos = get_external_position();
 
-				Serial.print(millis());
-				Serial.print("\t");
-				Serial.printf_P(PSTR("Pos [%+1.2f\t%+1.2f\t%+1.2f]"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
-				Serial.print("\t");
-				Serial.printf_P(PSTR("Vel [%+1.2f\t%+1.2f\t%+1.2f]"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
-				Serial.print("\t");
-				Serial.printf_P(PSTR("Offset [%+1.2f\t%+1.2f\t%+1.2f]"), accels_offset.x, accels_offset.y, accels_offset.z);
-				Serial.print("\t");
-				Serial.printf_P(PSTR("ExtPos [%+1.2f\t%+1.2f\t%+1.2f]"), ext_pos.x/100, ext_pos.y/100, ext_pos.z/100);
-				Serial.println();
-			  
 				counter = 0;
 			}
-        }
-		
-		if(Serial.available() > 0){
-			return (0);
+			
+			if(counter%rate == 0){
+				Vector3f ext_pos = get_external_position();
+				
+				// MATLAB format
+				if(format_log == 0){
+					Vector3f raw_accel = imu.get_accel();
+					Vector3f gyro = imu.get_gyro();
+				
+					Serial.print(millis());
+					Serial.print("\t");
+					Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), raw_accel.x, raw_accel.y, raw_accel.z);
+					Serial.print("\t");
+					Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), gyro.x, gyro.y, gyro.z);
+					Serial.print("\t");
+					Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_rotated.x, accels_rotated.y, accels_rotated.z);
+					Serial.print("\t");
+					Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
+					Serial.print("\t");
+					Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
+					Serial.print("\t");
+					Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_offset.x, accels_offset.y, accels_offset.z);
+					Serial.print("\t");
+					Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), ext_pos.x/100, ext_pos.y/100, ext_pos.z/100);
+					Serial.println();
+				}
+				// Human format
+				else{
+					Serial.print(millis());
+					Serial.print("\t");
+					Serial.printf_P(PSTR("Pos [%+1.2f\t%+1.2f\t%+1.2f]"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
+					Serial.print("\t");
+					Serial.printf_P(PSTR("Vel [%+1.2f\t%+1.2f\t%+1.2f]"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
+					Serial.print("\t");
+					Serial.printf_P(PSTR("Offset [%+1.2f\t%+1.2f\t%+1.2f]"), accels_offset.x, accels_offset.y, accels_offset.z);
+					Serial.print("\t");
+					Serial.printf_P(PSTR("ExtPos [%+1.2f\t%+1.2f\t%+1.2f]"), ext_pos.x/100, ext_pos.y/100, ext_pos.z/100);
+					Serial.println();
+				}
+			}
 		}
-    }
-  
-#else
-  Serial.println("Inertial navigation is disabled. Exiting.");
-#endif
-  
+	}
+		
+	if(Serial.available() > 0){
+		return (0);
+	}
+	
+	#else
+	  Serial.println("Inertial navigation is disabled. Exiting.");
+	#endif
 }
 
 static int8_t test_led(uint8_t argc, const Menu::arg *argv) {
@@ -1294,77 +1396,6 @@ static int8_t test_led(uint8_t argc, const Menu::arg *argv) {
       return (0);
     }
   }
-}
-
-static int8_t test_inav_dump(uint8_t argc, const Menu::arg *argv) {
-  
-#if INERTIAL_NAV == ENABLED
-  
-  Serial.println();
-  Serial.println("The output is on the following format, where each property consists of three (3) values unless otherwise specified.");
-  Serial.println("All quantities are in SI units (angles in radians) unless otherwise specified.");
-  Serial.println("Time (1) [micros]\tRaw Accelerometer\tRaw Gyro\tRotated Accelerometer\tVelocity\tPosition\tAccelerometer offset\tPosition, from external system");
-  Serial.println();
-
-  Serial.println("Calibrating accelerometers...");
-  calibrate_accels();
-  
-  unsigned long fast_loopTimer = millis();
-  float delta_ms_fast_loop;
-
-  byte counter = 0;
-  
-  print_hit_enter();
-
-  delay(1000);
-  
-  while(1) {
-    
-    if (millis() - fast_loopTimer > 9) {
-      delta_ms_fast_loop = millis() - fast_loopTimer;
-      fast_loopTimer = millis();
-      G_Dt = (float)delta_ms_fast_loop / 1000.f;
-      
-      read_AHRS();
-      calc_inertia();
-
-      counter++;
-      if(counter == 10) {
-	  g_gps->update();
-          inertial_error_correction();
-          counter = 0;
-      }
-
-      Vector3f raw_accel = imu.get_accel();
-      Vector3f gyro = imu.get_gyro();
-      Vector3f ext_pos = get_external_position();
-
-      Serial.print(millis());
-      Serial.print("\t");
-      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), raw_accel.x, raw_accel.y, raw_accel.z);
-      Serial.print("\t");
-      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), gyro.x, gyro.y, gyro.z);
-      Serial.print("\t");
-      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_rotated.x, accels_rotated.y, accels_rotated.z);
-      Serial.print("\t");
-      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
-      Serial.print("\t");
-      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
-      Serial.print("\t");
-      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_offset.x, accels_offset.y, accels_offset.z);
-      Serial.print("\t");
-      Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), ext_pos.x/100, ext_pos.y/100, ext_pos.z/100);
-      Serial.println();
-      
-      if(Serial.available() > 0){
-	return (0);
-      }
-    }
-  }
-  
-#else
-  Serial.println("Inertial navigation is disabled. Exiting.");
-#endif
 }
 
 static void print_hit_enter()
