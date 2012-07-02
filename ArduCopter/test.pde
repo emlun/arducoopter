@@ -1231,7 +1231,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 			
 			// GPS corrections and data printing occures at 10Hz
 			counter++;
-			if(counter == 10) {
+			if(counter == 20) {
 				
 				// Refresh the GPS data
 				g_gps->update();
