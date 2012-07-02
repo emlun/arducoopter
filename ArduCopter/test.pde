@@ -1212,7 +1212,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 		}
 	}
 	
-	Serial.println("Choose log decimation (max 9)...");
+	Serial.println("Choose log decimation (max 20)...");
 	while(1){
 	
 		delay(250);
