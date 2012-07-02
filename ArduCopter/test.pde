@@ -1284,7 +1284,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 		Serial.println();
 		Serial.println("The output is on the following format, where each property consists of three (3) values unless otherwise specified.");
 		Serial.println("All quantities are in SI units (angles in radians) unless otherwise specified.");
-		Serial.println("Time [micros]\tARx\tARy\tARz\tGRx\tGRy\tGRz\tAx\tAy\tAz\tVx\tVy\tVz\tPx\tPy\tPz\tAOx\tAOy\tAOz\tPEx\tPEy\tPEz");
+		Serial.println("Time [micros]\tG_Dt [ms]\tARx\tARy\tARz\tGRx\tGRy\tGRz\tAx\tAy\tAz\tVx\tVy\tVz\tPx\tPy\tPz\tAOx\tAOy\tAOz\tPEx\tPEy\tPEz");
 	}
   
 	while(1) {
@@ -1295,7 +1295,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 		if ((timer - fast_loopTimer) >= 10000 && imu.new_data_available()) {
 			
 			// Update delta_T to match reality
-			G_Dt 				= (float)(timer - fast_loopTimer) / 1000000.f;		// used by PI Loops
+			G_Dt 				= 0.99*G_Dt + 0.01*(float)(timer - fast_loopTimer) / 1000000.f;		// used by PI Loops
 			fast_loopTimer 		= timer;
       
 			// This updates the DCM and integrates accelerometers
@@ -1327,6 +1327,8 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 					Vector3f gyro = imu.get_gyro();
 				
 					Serial.print(millis());
+					Serial.print("\t");
+					Serial.print(G_Dt*1000);
 					Serial.print("\t");
 					Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), raw_accel.x, raw_accel.y, raw_accel.z);
 					Serial.print("\t");
