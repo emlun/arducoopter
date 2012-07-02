@@ -920,6 +920,7 @@ AP_Relay relay;
 void setup() {
 	memcheck_init();
 	init_ardupilot();
+    compass.set_declination(ToRad(5));
 }
 
 void loop()
