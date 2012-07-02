@@ -1240,25 +1240,17 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 				inertial_error_correction();
 				
 				// Large block to print states to serial
-				Vector3f raw_accel = imu.get_accel();
-				Vector3f gyro = imu.get_gyro();
 				Vector3f ext_pos = get_external_position();
 
 				Serial.print(millis());
 				Serial.print("\t");
-				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), raw_accel.x, raw_accel.y, raw_accel.z);
+				Serial.printf_P(PSTR("Pos [%+1.2f\t%+1.2f\t%+1.2f]"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
 				Serial.print("\t");
-				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), gyro.x, gyro.y, gyro.z);
+				Serial.printf_P(PSTR("Vel [%+1.2f\t%+1.2f\t%+1.2f]"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
 				Serial.print("\t");
-				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_rotated.x, accels_rotated.y, accels_rotated.z);
+				Serial.printf_P(PSTR("Offset [%+1.2f\t%+1.2f\t%+1.2f]"), accels_offset.x, accels_offset.y, accels_offset.z);
 				Serial.print("\t");
-				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_velocity.x/100, accels_velocity.y/100, accels_velocity.z/100);
-				Serial.print("\t");
-				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_position.x/100, accels_position.y/100, accels_position.z/100);
-				Serial.print("\t");
-				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), accels_offset.x, accels_offset.y, accels_offset.z);
-				Serial.print("\t");
-				Serial.printf_P(PSTR("%1.3f\t%1.3f\t%1.3f"), ext_pos.x/100, ext_pos.y/100, ext_pos.z/100);
+				Serial.printf_P(PSTR("ExtPos [%+1.2f\t%+1.2f\t%+1.2f]"), ext_pos.x/100, ext_pos.y/100, ext_pos.z/100);
 				Serial.println();
 			  
 				counter = 0;
