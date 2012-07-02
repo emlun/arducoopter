@@ -1185,7 +1185,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 
 	int value = 0;		// Data from serial
 	byte format_log;	// Logging format, 0 == MATLAB
-	int rate = 1;		// Logging decimation factor
+	int rate = 0;		// Logging decimation factor
 	
 	// Let the user decide on logging format (ie MATLAB or human friendly).
 	// Also let the user choose the rate (every loop <-> every 20th loop)
@@ -1223,20 +1223,24 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 			value = Serial.read();
 			value -= 48;		// ASCII 0 == 48
 			
-			if(value>9||value<1) {
-				Serial.printf_P(PSTR("Received decimation factor %u\n"),value);
-				rate = 9;
+			if(value<=9||value>=0) {
+				rate *= 10;
+				rate += value;
 			}
 			else{
-				rate = value;
+				break;
 			}
-			Serial.printf_P(PSTR("Printing with rate 20/%u\n"),rate);
-			
-			while(Serial.available()) {
-				Serial.read();
-			}
-			break;
 		}
+	}
+
+	if(rate>20||rate<1) {
+		Serial.printf_P(PSTR("Received decimation factor %u\n"),rate);
+		rate = 20;
+	}
+	Serial.printf_P(PSTR("Printing with rate 20/%u\n"),rate);
+	
+	while(Serial.available()) {
+		Serial.read();
 	}
 	
 	// All preparations are done.
