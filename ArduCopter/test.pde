@@ -1207,9 +1207,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 				Serial.println("Using MATLAB log...");
 			}
 			
-			while(Serial.available()) {
-				Serial.read();
-			}
+			clear_serial();
 			break;
 		}
 	}
@@ -1223,7 +1221,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 			value = Serial.read();
 			value -= 48;		// ASCII 0 == 48
 			
-			if(value<=9||value>=0) {
+			if(value<=9&&value>=0) {
 				rate *= 10;
 				rate += value;
 			}
@@ -1239,9 +1237,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 	}
 	Serial.printf_P(PSTR("Printing with rate 20/%u\n"),rate);
 	
-	while(Serial.available()) {
-		Serial.read();
-	}
+	clear_serial();
 	
 	// All preparations are done.
 	
@@ -1254,9 +1250,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 		delay(250);
 
 		if(Serial.available() > 0) {
-			while(Serial.available()) {
-				Serial.read();
-			}
+		        clear_serial();
 			break;
 		}
 	}
@@ -1281,6 +1275,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 		while(1){
 			delay(250);
 			if(Serial.available() > 0) {
+			        clear_serial();
 				break;
 			}
 		}
@@ -1363,10 +1358,11 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 				}
 			}
 		}
-	}
+
+		if(Serial.available() > 0){
+		  return (0);
+		}
 		
-	if(Serial.available() > 0){
-		return (0);
 	}
 	
 	#else
@@ -1410,6 +1406,12 @@ static void print_hit_enter()
 static void print_test_disabled()
 {
 	Serial.printf_P(PSTR("Sorry, not 1280 compat.\n"));
+}
+
+static inline void clear_serial() {
+  while(Serial.available()) {
+    Serial.read();
+  }
 }
 
 /*
