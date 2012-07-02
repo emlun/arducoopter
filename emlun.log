@@ -1,3 +1,15 @@
+2012-06-29
+(Log written 2012-07-02)
+Added inclusion of position data from external positioning system to
+inertial navigation system. Took the circuit for a walk and analyzed the
+results. The results did not quite indicate that inertial navigation
+would improve the position estimate.
+
+2012-06-28
+(Log written 2012-07-02)
+Added a test mode that prints lots of sensor data, and some processed
+data as well.
+
 2012-06-27
 Read a little more on the report.
 Worked with inertial navigation: tried to implement a Kalman filter and
