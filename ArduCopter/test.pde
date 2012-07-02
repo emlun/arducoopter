@@ -1219,6 +1219,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 
 		if( Serial.available() ) {
 			value = Serial.read();
+			Serial.print((char)value);
 			value -= 48;		// ASCII 0 == 48
 			
 			if(value<=9&&value>=0) {
