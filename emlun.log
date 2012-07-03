@@ -1,3 +1,10 @@
+2012-07-03
+Started working with the Tmotes. Tried to compile and run a bunch of
+Tmote code but couldn't make it work. Managed to install and run
+TinyOS's SerialForwarder Java utility and wrote a Java program that ran
+a handshake routine. That worked, but all attempts at compiling
+applications for installation on the mote failed.
+
 2012-07-02
 Tweaked inertial navigation parameters a bit, took the circuit for
 another walk and did some more tests on inertial navigation. After all,
