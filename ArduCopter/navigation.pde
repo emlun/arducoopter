@@ -59,10 +59,14 @@ static void calc_XY_velocity(){
 	#if INERTIAL_NAV == ENABLED
 	  // inertial_nav
 	  inertial_error_correction();
+	  
+	  current_loc.lng = (accels_position.y / 1.1 / scaleLongDown + gps_origin_longitude);
+	  current_loc.lat = accels_position.x / 1.1 + gps_origin_latitude;
+	  
+	#else
+		current_loc.lng = xLeadFilter.get_position(g_gps->longitude, x_actual_speed);
+		current_loc.lat = yLeadFilter.get_position(g_gps->latitude,  y_actual_speed);
 	#endif
-
-	current_loc.lng = xLeadFilter.get_position(g_gps->longitude, x_actual_speed);
-	current_loc.lat = yLeadFilter.get_position(g_gps->latitude,  y_actual_speed);
 }
 
 static void calc_location_error(struct Location *next_loc)
