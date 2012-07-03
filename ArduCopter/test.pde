@@ -1283,7 +1283,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 		
 		// Print a useful header if we are logging to MATLAB
 		Serial.println();
-		Serial.println("The output is on the following format, where each property consists of three (3) values unless otherwise specified.");
+		Serial.println("The output is on the following format.");
 		Serial.println("All quantities are in SI units (angles in radians) unless otherwise specified.");
 		Serial.println("Time [micros]\tG_Dt [ms]\tARx\tARy\tARz\tGRx\tGRy\tGRz\tAx\tAy\tAz\tVx\tVy\tVz\tPx\tPy\tPz\tAOx\tAOy\tAOz\tPEx\tPEy\tPEz");
 	}
