@@ -1,3 +1,31 @@
+2012-07-03
+Started working with the Tmotes. Tried to compile and run a bunch of
+Tmote code but couldn't make it work. Managed to install and run
+TinyOS's SerialForwarder Java utility and wrote a Java program that ran
+a handshake routine. That worked, but all attempts at compiling
+applications for installation on the mote failed.
+
+2012-07-02
+Tweaked inertial navigation parameters a bit, took the circuit for
+another walk and did some more tests on inertial navigation. After all,
+inertial navigation might actually improve the quadrotor's ability to
+stabilize and hover at a given location. The test results this time did
+indicate that inertial navigation gives a not-so-bad indication of small
+scale movements.
+Read a little about the Kalman filter.
+
+2012-06-29
+(Log written 2012-07-02)
+Added inclusion of position data from external positioning system to
+inertial navigation system. Took the circuit for a walk and analyzed the
+results. The results did not quite indicate that inertial navigation
+would improve the position estimate.
+
+2012-06-28
+(Log written 2012-07-02)
+Added a test mode that prints lots of sensor data, and some processed
+data as well.
+
 2012-06-27
 Read a little more on the report.
 Worked with inertial navigation: tried to implement a Kalman filter and
