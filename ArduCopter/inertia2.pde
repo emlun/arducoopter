@@ -111,7 +111,7 @@ long gps_origin_latitude;
 long gps_origin_longitude;
 long gps_origin_altitude;
 static inline Vector3f gps_to_cartesian() {
-  return Vector3f((float)(g_gps->latitude - gps_origin_latitude)*1.1, (float)(g_gps->longitude - gps_origin_longitude) * scaleLongDown * 1.1, -(float)g_gps->altitude - gps_origin_altitude);
+  return Vector3f((float)(g_gps->latitude - gps_origin_latitude)*1.1, (float)(g_gps->longitude - gps_origin_longitude) * scaleLongDown * 1.1, -((float)g_gps->altitude - gps_origin_altitude));
 }
 static inline void set_gps_origin() {
   gps_origin_latitude = g_gps -> latitude;
