@@ -77,10 +77,10 @@ static void calc_location_error(struct Location *next_loc)
 	*/
 
 	// X Error
-	long_error	= (float)(next_loc->lng - current_loc.lng) * scaleLongDown;   // 500 - 0 = 500 Go East
+	long_error	= (float)(next_loc->lng * scaleLongDown - (accels_position.y / 1.1 + gps_origin_longitude));   // 500 - 0 = 500 Go East
 
 	// Y Error
-	lat_error	= next_loc->lat - current_loc.lat;							// 500 - 0 = 500 Go North
+	lat_error	= next_loc->lat - (accels_position.x / 1.1 + gps_origin_latitude);							// 500 - 0 = 500 Go North
 }
 
 #define NAV_ERR_MAX 600
