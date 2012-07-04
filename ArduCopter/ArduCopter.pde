@@ -1856,10 +1856,11 @@ static void update_navigation()
 			// This feature allows us to reposition the quad when the user lets
 			// go of the sticks
 
-			if((abs(g.rc_2.control_in) + abs(g.rc_1.control_in)) > 500){
-				if(wp_distance > 500)
-					loiter_override 	= true;
-			}
+			// if((abs(g.rc_2.control_in) + abs(g.rc_1.control_in)) > 500){
+				// if(wp_distance > 500)
+					// loiter_override 	= true;
+			// }
+			loiter_override 	= false;
 
 			// Allow the user to take control temporarily,
 			if(loiter_override){
