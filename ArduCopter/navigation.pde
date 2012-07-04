@@ -108,7 +108,7 @@ static void calc_loiter(int x_error, int y_error)
 
 	// calculate rate error
 	#if INERTIAL_NAV == ENABLED
-	x_rate_error	= x_target_speed - accels_velocity.x;		// calc the speed error
+	x_rate_error	= x_target_speed - accels_velocity.y;		// calc the speed error
 	#else
 	x_rate_error	= x_target_speed - x_actual_speed;			// calc the speed error
 	#endif
@@ -146,7 +146,7 @@ static void calc_loiter(int x_error, int y_error)
 
 	// calculate rate error
 	#if INERTIAL_NAV == ENABLED
-	y_rate_error	= y_target_speed - accels_velocity.y;		// calc the speed error
+	y_rate_error	= y_target_speed - accels_velocity.x;		// calc the speed error
 	#else
 	y_rate_error	= y_target_speed - y_actual_speed;			// calc the speed error
 	#endif
