@@ -842,10 +842,10 @@
 
 
 #ifndef LOG_ATTITUDE_FAST
-# define LOG_ATTITUDE_FAST		DISABLED
+# define LOG_ATTITUDE_FAST		ENABLED
 #endif
 #ifndef LOG_ATTITUDE_MED
-# define LOG_ATTITUDE_MED 		ENABLED
+# define LOG_ATTITUDE_MED 		DISABLED
 #endif
 #ifndef LOG_GPS
 # define LOG_GPS 				ENABLED
