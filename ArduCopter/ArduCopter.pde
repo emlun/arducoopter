@@ -1558,8 +1558,8 @@ void update_roll_pitch_mode(void)
 			nav_roll			+= constrain(wrap_180(auto_roll  - nav_roll),  -g.auto_slew_rate.get(), g.auto_slew_rate.get()); // 40 deg a second
 			nav_pitch			+= constrain(wrap_180(auto_pitch - nav_pitch), -g.auto_slew_rate.get(), g.auto_slew_rate.get()); // 40 deg a second
 
-			control_roll 		= g.rc_1.control_mix(nav_roll);
-			control_pitch 		= g.rc_2.control_mix(nav_pitch);
+			control_roll 		= nav_roll; //g.rc_1.control_mix(nav_roll);
+            control_pitch 		= nav_pitch; //g.rc_2.control_mix(nav_pitch);
 			g.rc_1.servo_out 	= get_stabilize_roll(control_roll);
 			g.rc_2.servo_out 	= get_stabilize_pitch(control_pitch);
 			break;
