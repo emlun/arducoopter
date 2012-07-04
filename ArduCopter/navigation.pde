@@ -125,7 +125,7 @@ static void calc_loiter(int x_error, int y_error)
 	}
 
 	output			= p + i + d;
-	nav_lon			= constrain(output, -3000, 3000); 			// 30°
+	nav_lon			= constrain(output, -1000, 1000); 			// 10°
 
 #if LOGGING_ENABLED == ENABLED
 	// log output if PID logging is on and we are tuning the yaw
@@ -162,7 +162,7 @@ static void calc_loiter(int x_error, int y_error)
 	}
 
 	output			= p + i + d;
-	nav_lat			= constrain(output, -3000, 3000); // 30°
+	nav_lat			= constrain(output, -1000, 1000); // 10°
 
 #if LOGGING_ENABLED == ENABLED
 	// log output if PID logging is on and we are tuning the yaw
