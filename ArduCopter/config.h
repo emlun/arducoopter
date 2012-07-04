@@ -854,7 +854,7 @@
 # define LOG_PM 				ENABLED
 #endif
 #ifndef LOG_CTUN
-# define LOG_CTUN				ENABLED
+# define LOG_CTUN				DISABLED
 #endif
 #ifndef LOG_NTUN
 # define LOG_NTUN				ENABLED
