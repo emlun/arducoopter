@@ -71,13 +71,13 @@ static void calibrate_accels()
 	zero_accels();
 	accels_offset.zero();
 
-	for (int i = 0; i < 500; i++){
+	for (int i = 0; i < 100; i++){
 		delay(G_Dt * 1000);
 		read_AHRS();
 		calc_inertia();
 	}
 
-    // Integrate 100*a for 500*G_dt => a = int/(100*G_Dt*5)
+    // Integrate 100*a for 500*G_dt => a = int/(100*G_Dt*1)
 	accels_offset = -accels_velocity / (100 * G_Dt * 500);
 
 	zero_accels();
