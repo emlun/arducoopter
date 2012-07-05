@@ -292,7 +292,7 @@ get_nav_throttle(int32_t z_error)
 
 	// calculate rate error
 	#if INERTIAL_NAV == ENABLED
-	z_rate_error	= z_target_speed - accels_velocity.z;			// calc the speed error
+	z_rate_error	= z_target_speed + accels_velocity.z;			// calc the speed error
 	#else
 	z_rate_error	= z_target_speed - climb_rate;		// calc the speed error
 	#endif
