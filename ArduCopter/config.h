@@ -854,7 +854,7 @@
 # define LOG_PM 				ENABLED
 #endif
 #ifndef LOG_CTUN
-# define LOG_CTUN				DISABLED
+# define LOG_CTUN				ENABLED
 #endif
 #ifndef LOG_NTUN
 # define LOG_NTUN				ENABLED
@@ -874,7 +874,7 @@
 #endif
 // quad motor PWMs
 #ifndef LOG_MOTORS
-# define LOG_MOTORS				DISABLED
+# define LOG_MOTORS				ENABLED
 #endif
 // optical flow
 #ifndef LOG_OPTFLOW
