@@ -159,7 +159,7 @@ static void set_next_WP(struct Location *wp)
 	set_new_altitude(next_WP.alt);
 
 	// this is used to offset the shrinking longitude as we go towards the poles
-	float rads 			= (fabs((float)next_WP.lat)/t7) * 0.0174532925;
+	float rads 			= (fabs((float)(next_WP.lat+gps_origin_latitude))/t7) * 0.0174532925;
 	scaleLongDown 		= cos(rads);
 	scaleLongUp 		= 1.0f/cos(rads);
 

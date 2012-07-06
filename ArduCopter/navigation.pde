@@ -60,8 +60,8 @@ static void calc_XY_velocity(){
 	  // inertial_nav
 	  inertial_error_correction();
 	  
-	  current_loc.lng = (accels_position.y / 1.1 / scaleLongDown + gps_origin_longitude);
-	  current_loc.lat = accels_position.x / 1.1 + gps_origin_latitude;
+	  current_loc.lng = accels_position.y / 1.1 / scaleLongDown;
+	  current_loc.lat = accels_position.x / 1.1;
 	  
 	#else
 		current_loc.lng = xLeadFilter.get_position(g_gps->longitude, x_actual_speed);
