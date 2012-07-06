@@ -5,7 +5,7 @@
 
 #include <AP_Param.h>
 #include <Filter.h>
-#include <AverageFilter.h>
+#include <DerivativeFilter.h>
 #include "../AP_PeriodicProcess/AP_PeriodicProcess.h"
 
 class AP_Baro
@@ -15,8 +15,8 @@ class AP_Baro
 	AP_Baro() {}
 	virtual bool    init(AP_PeriodicProcess *scheduler)=0;
 	virtual uint8_t read() = 0;
-	virtual int32_t get_pressure() = 0;
-	virtual int16_t get_temperature() = 0;
+	virtual float get_pressure() = 0;
+	virtual float get_temperature() = 0;
 	
 	virtual int32_t get_raw_pressure() = 0;
 	virtual int32_t get_raw_temp() = 0;
@@ -30,28 +30,32 @@ class AP_Baro
     // of the last calibrate() call
     float get_altitude(void);
 
+    // return how many pressure samples were used to obtain
+    // the last pressure reading
+    uint8_t get_pressure_samples(void) { return _pressure_samples; }
+
     // get current climb rate in meters/s. A positive number means
     // going up
     float get_climb_rate(void);
 
     // the ground values are only valid after calibration
-    int16_t get_ground_temperature(void) { return _ground_temperature.get(); }
-    int32_t get_ground_pressure(void) { return _ground_pressure.get(); }
+    float get_ground_temperature(void) { return _ground_temperature.get(); }
+    float get_ground_pressure(void) { return _ground_pressure.get(); }
 
 	static const struct AP_Param::GroupInfo var_info[];
 
 protected:
     uint32_t _last_update;
+    uint8_t _pressure_samples;
 
 private:
-    AP_Int16    _ground_temperature;
-    AP_Int32    _ground_pressure;
+    AP_Float    _ground_temperature;
+    AP_Float    _ground_pressure;
     float       _altitude;
-    uint32_t    _last_altitude_t;
-    float		_last_altitude;
     float       _climb_rate;
     uint32_t    _last_climb_rate_t;
-    AverageFilterFloat_Size5 _climb_rate_filter;
+    uint32_t    _last_altitude_t;
+    DerivativeFilterFloat_Size7 _climb_rate_filter;
 };
 
 #include "AP_Baro_MS5611.h"

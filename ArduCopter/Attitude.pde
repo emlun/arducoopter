@@ -253,8 +253,15 @@ get_rate_yaw(int32_t target_rate)
 
 	output 	= p+i+d;
 
-	// constrain output
+#if FRAME_CONFIG == HELI_FRAME
 	output = constrain(output, -4500, 4500);
+#else
+	// output control:
+	int16_t yaw_limit = 1900 + abs(g.rc_4.control_in);
+
+	// constrain output
+	output = constrain(output, -yaw_limit, yaw_limit);
+#endif
 
 #if LOGGING_ENABLED == ENABLED
 	static int8_t log_counter = 0;					// used to slow down logging of PID values to dataflash
@@ -407,22 +414,16 @@ get_nav_yaw_offset(int yaw_input, int reset)
 		return ahrs.yaw_sensor;
 
 	}else{
-#if ALTERNATIVE_YAW_MODE == ENABLED
-		_yaw = nav_yaw + (yaw_input / 50);
-		return wrap_360(_yaw);
-#else
 		// re-define nav_yaw if we have stick input
 		if(yaw_input != 0){
 			// set nav_yaw + or - the current location
 			_yaw = yaw_input + ahrs.yaw_sensor;
 			// we need to wrap our value so we can be 0 to 360 (*100)
 			return wrap_360(_yaw);
-
 		}else{
 			// no stick input, lets not change nav_yaw
 			return nav_yaw;
 		}
-#endif
 	}
 }
 
@@ -690,4 +691,121 @@ get_of_pitch(int32_t control_pitch)
 #else
     return control_pitch;
 #endif
+}
+
+
+// THOR
+// The function call for managing the flight mode Toy
+void roll_pitch_toy()
+{
+	bool manual_control = false;
+
+	if(g.rc_2.control_in != 0){
+		// If we pitch forward or back, resume manually control
+		manual_control  = true;
+	}
+
+	// Yaw control - Yaw is always available, and will NOT exit the
+	// user from Loiter mode
+	int16_t yaw_rate = g.rc_1.control_in / g.toy_yaw_rate;
+	//nav_yaw += yaw_rate / 100;
+	//nav_yaw = wrap_360(nav_yaw);
+	//g.rc_4.servo_out = get_stabilize_yaw(nav_yaw);
+
+	if(g.rc_1.control_in != 0){
+		g.rc_4.servo_out = get_acro_yaw(yaw_rate);
+		yaw_stopped = false;
+		yaw_timer = 150;
+	}else if (!yaw_stopped){
+		g.rc_4.servo_out = get_acro_yaw(0);
+		yaw_timer--;
+		if(yaw_timer == 0){
+			yaw_stopped = true;
+			nav_yaw = ahrs.yaw_sensor;
+		}
+	}else{
+		nav_yaw = get_nav_yaw_offset(yaw_rate, g.rc_3.control_in);
+		g.rc_4.servo_out = get_stabilize_yaw(nav_yaw);
+	}
+
+
+	if(manual_control){
+		// user is in control: reset count-up timer
+		toy_input_timer = 0;
+
+		// roll_rate is the outcome of the linear equation or lookup table
+		// based on speed and Yaw rate
+		int16_t roll_rate;
+
+		// We manually set out modes based on the state of Toy mode:
+		// Handle throttle manually
+		throttle_mode 	= THROTTLE_MANUAL;
+
+		// Dont try to navigate or integrate a nav error
+		wp_control 		= NO_NAV_MODE;
+
+	#if TOY_LOOKUP == 1
+		uint8_t xx, yy;
+		// Lookup value
+		xx	= g_gps->ground_speed / 200;
+		yy	= abs(yaw_rate / 500);
+
+		// constrain to lookup Array range
+		xx = constrain(xx, 0, 3);
+		yy = constrain(yy, 0, 8);
+
+		roll_rate = toy_lookup[yy * 4 + xx];
+
+		if(yaw_rate == 0)
+			roll_rate = 0;
+		else if(yaw_rate < 0)
+			roll_rate = -roll_rate;
+
+		roll_rate = constrain(roll_rate, -(4500 / g.toy_yaw_rate.get()), (4500 / g.toy_yaw_rate.get()));
+	#else
+		// yaw_rate = roll angle
+		// Linear equation for Yaw:Speed to Roll
+		// default is 1000, lower for more roll action
+		roll_rate = (g_gps->ground_speed / 1000) * yaw_rate;
+		// limit roll rate to 15, 30, or 45 deg per second.
+		roll_rate = constrain(roll_rate, -(4500 / g.toy_yaw_rate.get()), (4500 / g.toy_yaw_rate.get()));
+	#endif
+
+		// Output the attitude
+		g.rc_1.servo_out = get_stabilize_roll(roll_rate);
+		g.rc_2.servo_out = get_stabilize_pitch(g.rc_2.control_in);
+
+	}else{
+		//no user input
+		// Count-up to decision tp Loiter
+		toy_input_timer++;
+
+		//if (toy_input_timer == TOY_DELAY){
+		if((wp_control != LOITER_MODE) && ((g_gps->ground_speed < 150) || (toy_input_timer == TOY_DELAY))){
+
+			// clear our I terms for Nav or we will carry over old values
+			reset_wind_I();
+			// loiter
+			wp_control = LOITER_MODE;
+
+			// we are in an alt hold throttle with manual override
+			throttle_mode 	= THROTTLE_HOLD;
+
+			set_next_WP(&current_loc);
+		}
+
+		if (wp_control == LOITER_MODE){
+			// prevent timer overflow
+			toy_input_timer = TOY_DELAY;
+
+			// outputs the needed nav_control to maintain speed and direction
+			g.rc_1.servo_out 	= get_stabilize_roll(auto_roll);
+			g.rc_2.servo_out 	= get_stabilize_pitch(auto_pitch);
+
+		}else{
+			// Coast
+			g.rc_1.servo_out 	= get_stabilize_roll(0);
+			g.rc_2.servo_out 	= get_stabilize_pitch(0);
+		}
+	}
 }
