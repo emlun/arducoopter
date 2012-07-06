@@ -843,26 +843,22 @@ static void Log_Read_Startup()
 	Serial.printf_P(PSTR("START UP\n"));
 }
 
-static void Log_Write_Data(int8_t _type, float _data)
-{
+static void Log_Write_Data(int8_t _type, int32_t _data, int8_t _type_byte) {
 	DataFlash.WriteByte(HEAD_BYTE1);
 	DataFlash.WriteByte(HEAD_BYTE2);
 	DataFlash.WriteByte(LOG_DATA_MSG);
 	DataFlash.WriteByte(_type);
-	DataFlash.WriteByte(1);
-	DataFlash.WriteLong(get_int(_data));
-	DataFlash.WriteByte(END_BYTE);
-}
-
-static void Log_Write_Data(int8_t _type, int32_t _data)
-{
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_DATA_MSG);
-	DataFlash.WriteByte(_type);
-	DataFlash.WriteByte(0);
+	DataFlash.WriteByte(_type_byte);
 	DataFlash.WriteLong(_data);
 	DataFlash.WriteByte(END_BYTE);
+}    
+
+static void Log_Write_Data(int8_t _type, float _data) {
+  Log_Write_Data(_type, get_int(_data), 1);
+}
+
+static void Log_Write_Data(int8_t _type, int32_t _data) {
+  Log_Write_Data(_type, _data, 0);
 }
 
 // Read a mode packet
