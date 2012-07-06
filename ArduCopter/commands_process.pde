@@ -132,8 +132,7 @@ static void execute_nav_command(void)
 	g.command_index  = command_nav_index;
 
 	// Save CMD to Log
-	if (g.log_bitmask & MASK_LOG_CMD)
-		Log_Write_Cmd(g.command_index, &command_nav_queue);
+	Log_Write_Cmd(g.command_index, &command_nav_queue);
 
 	// clear navigation prameters
 	reset_nav_params();

@@ -243,6 +243,10 @@ void print_latlon(BetterStream *s, int32_t lat_or_lon)
 // Write an GPS packet. Total length : 31 bytes
 static void Log_Write_GPS()
 {
+        if(!(g.log_bitmask & MASK_LOG_GPS)) {
+	  return;
+	}
+
 	DataFlash.WriteByte(HEAD_BYTE1);
 	DataFlash.WriteByte(HEAD_BYTE2);
 	DataFlash.WriteByte(LOG_GPS_MSG);
@@ -289,6 +293,10 @@ static void Log_Read_GPS()
 
 static void Log_Write_Raw()
 {
+        if(!(g.log_bitmask & MASK_LOG_RAW)) {
+	  return;
+	}
+
 	Vector3f accel = imu.get_accel();
 
 	DataFlash.WriteByte(HEAD_BYTE1);
@@ -344,6 +352,10 @@ static void Log_Read_Raw()
 // Write an Current data packet. Total length : 16 bytes
 static void Log_Write_Current()
 {
+	if(!(g.log_bitmask & MASK_LOG_CUR)) {
+	  return;
+	}
+
 	DataFlash.WriteByte(HEAD_BYTE1);
 	DataFlash.WriteByte(HEAD_BYTE2);
 	DataFlash.WriteByte(LOG_CURRENT_MSG);
@@ -378,6 +390,10 @@ static void Log_Read_Current()
 // Write an Motors packet. Total length : 12 ~ 20 bytes
 static void Log_Write_Motors()
 {
+        if(!(g.log_bitmask & MASK_LOG_MOTORS)) {
+	  return;
+	}
+
 	DataFlash.WriteByte(HEAD_BYTE1);
 	DataFlash.WriteByte(HEAD_BYTE2);
 	DataFlash.WriteByte(LOG_MOTORS_MSG);
@@ -505,6 +521,10 @@ static void Log_Read_Motors()
 // Write an optical flow packet. Total length : 30 bytes
 static void Log_Write_Optflow()
 {
+        if(!(g.log_bitmask & MASK_LOG_OPTFLOW)) {
+	  return;
+	}
+
 	#ifdef OPTFLOW_ENABLED
 	DataFlash.WriteByte(HEAD_BYTE1);
 	DataFlash.WriteByte(HEAD_BYTE2);
@@ -552,6 +572,10 @@ static void Log_Read_Optflow()
 // Write an Nav Tuning packet. Total length : 24 bytes
 static void Log_Write_Nav_Tuning()
 {
+        if(!(g.log_bitmask & MASK_LOG_NTUN)) {
+	  return;
+	}
+
 	//Matrix3f tempmat = dcm.get_dcm_matrix();
 
 	DataFlash.WriteByte(HEAD_BYTE1);
@@ -604,6 +628,10 @@ static void Log_Read_Nav_Tuning()
 // Write a control tuning packet. Total length : 26 bytes
 static void Log_Write_Control_Tuning()
 {
+        if(!(g.log_bitmask & MASK_LOG_CTUN)) {
+	  return;
+	}
+
 	DataFlash.WriteByte(HEAD_BYTE1);
 	DataFlash.WriteByte(HEAD_BYTE2);
 	DataFlash.WriteByte(LOG_CONTROL_TUNING_MSG);
@@ -642,6 +670,10 @@ static void Log_Read_Control_Tuning()
 // Write a performance monitoring packet. Total length : 9 bytes
 static void Log_Write_Performance()
 {
+        if(!(g.log_bitmask & MASK_LOG_PM)) {
+	  return;
+	}
+
 	DataFlash.WriteByte(HEAD_BYTE1);
 	DataFlash.WriteByte(HEAD_BYTE2);
 	DataFlash.WriteByte(LOG_PERFORMANCE_MSG);
@@ -671,6 +703,10 @@ static void Log_Read_Performance()
 // Write a command processing packet.  Total length : 21 bytes
 static void Log_Write_Cmd(byte num, struct Location *wp)
 {
+        if(!(g.log_bitmask & MASK_LOG_CMD)) {
+	  return;
+	}
+
 	DataFlash.WriteByte(HEAD_BYTE1);
 	DataFlash.WriteByte(HEAD_BYTE2);
 	DataFlash.WriteByte(LOG_CMD_MSG);
@@ -712,6 +748,21 @@ static void Log_Read_Cmd()
                     temp7,
                     temp8);
 }
+
+static void Log_Write_Attitude_Fast() {
+  if(! (g.log_bitmask & MASK_LOG_ATTITUDE_FAST)) {
+    return;
+  }
+  Log_Write_Attitude();
+}
+
+static void Log_Write_Attitude_Med() {
+  if(!(g.log_bitmask & MASK_LOG_ATTITUDE_MED)) {
+    return;
+  }
+  Log_Write_Attitude();
+}
+
 
 // Write an attitude packet. Total length : 16 bytes
 static void Log_Write_Attitude()
@@ -757,6 +808,10 @@ static void Log_Read_Attitude()
 // Write a mode packet. Total length : 7 bytes
 static void Log_Write_Mode(byte mode)
 {
+        if(!(g.log_bitmask & MASK_LOG_MODE)) {
+	  return;
+	}
+
 	DataFlash.WriteByte(HEAD_BYTE1);
 	DataFlash.WriteByte(HEAD_BYTE2);
 	DataFlash.WriteByte(LOG_MODE_MSG);
@@ -828,6 +883,10 @@ static void Log_Read_Data()
 // Write an PID packet. Total length : 28 bytes
 static void Log_Write_PID(int8_t pid_id, int32_t error, int32_t p, int32_t i, int32_t d, int32_t output, float gain)
 {
+        if(!(g.log_bitmask & MASK_LOG_PID)) {
+	  return;
+	}
+
 	DataFlash.WriteByte(HEAD_BYTE1);
 	DataFlash.WriteByte(HEAD_BYTE2);
 	DataFlash.WriteByte(LOG_PID_MSG);

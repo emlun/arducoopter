@@ -998,8 +998,7 @@ void loop()
 		}
 		perf_mon_counter++;
 		if (perf_mon_counter > 600 ) {
-			if (g.log_bitmask & MASK_LOG_PM)
-				Log_Write_Performance();
+            Log_Write_Performance();
 
 			gps_fix_count 		= 0;
 			perf_mon_counter 	= 0;
@@ -1092,7 +1091,7 @@ static void medium_loop()
 				update_navigation();
 
 				// update log
-				if (g.log_bitmask & MASK_LOG_NTUN && motors.armed()){
+				if (motors.armed()){
 					Log_Write_Nav_Tuning();
 				}
 			}
@@ -1125,11 +1124,9 @@ static void medium_loop()
 			}
 
             if(motors.armed()){
-                if (g.log_bitmask & MASK_LOG_ATTITUDE_MED)
-                    Log_Write_Attitude();
+                Log_Write_Attitude_Med();
 
-				if (g.log_bitmask & MASK_LOG_MOTORS)
-					Log_Write_Motors();
+                Log_Write_Motors();
             }
 			break;
 
@@ -1217,11 +1214,11 @@ static void fifty_hz_loop()
 
 
 	# if HIL_MODE == HIL_MODE_DISABLED
-		if (g.log_bitmask & MASK_LOG_ATTITUDE_FAST && motors.armed())
-			Log_Write_Attitude();
+		if(motors.armed())
+		  Log_Write_Attitude_Fast();
 
-		if (g.log_bitmask & MASK_LOG_RAW && motors.armed())
-			Log_Write_Raw();
+		if(motors.armed())
+		  Log_Write_Raw();
 	#endif
 
 
@@ -1297,9 +1294,8 @@ static void slow_loop()
 // 1Hz loop
 static void super_slow_loop()
 {
-	if (g.log_bitmask & MASK_LOG_CUR && motors.armed())
+	if(motors.armed())
 		Log_Write_Current();
-
 
 	#if 0 //CENTER_THROTTLE == 1
 	// recalibrate the throttle_cruise to center on the sticks
@@ -1355,9 +1351,7 @@ static void update_optical_flow(void)
 	log_counter++;
 	if( log_counter >= 5 ) {
 	    log_counter = 0;
-		if (g.log_bitmask & MASK_LOG_OPTFLOW){
-			Log_Write_Optflow();
-		}
+	    Log_Write_Optflow();
 	}
 
 	/*if(g.optflow_enabled && current_loc.alt < 500){
@@ -1461,7 +1455,7 @@ static void update_GPS(void)
 
 			calc_XY_velocity();
 
-			if (g.log_bitmask & MASK_LOG_GPS && motors.armed()){
+			if(motors.armed()){
 				Log_Write_GPS();
 			}
 
@@ -2115,8 +2109,8 @@ static void update_altitude_est()
 		update_altitude();
 		alt_sensor_flag = false;
 
-		if(g.log_bitmask & MASK_LOG_CTUN && motors.armed()){
-			Log_Write_Control_Tuning();
+		if(motors.armed()) {
+		  Log_Write_Control_Tuning();
 		}
 
 	}else{
