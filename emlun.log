@@ -1,3 +1,9 @@
+2012-07-04
+(Log written 2012-07-06)
+We tried flying the quad in Maskinparken. It behaved very oddly. Later
+in the day we realised that navigation.pde and inertia.pde have
+different coordinate systems and set out to change this.
+
 2012-07-03
 Started working with the Tmotes. Tried to compile and run a bunch of
 Tmote code but couldn't make it work. Managed to install and run
