@@ -206,6 +206,9 @@ static void init_ardupilot()
 
     timer_scheduler.init( &isr_registry );
 
+    // initialise the analog port reader
+    AP_AnalogSource_Arduino::init_timer(&timer_scheduler);
+
 #if HIL_MODE != HIL_MODE_ATTITUDE
 #if CONFIG_ADC == ENABLED
 		// begin filtering the ADC Gyros
@@ -381,7 +384,8 @@ static void set_mode(byte mode)
 {
 	// if we don't have GPS lock
 	if(home_is_set == false){
-		// our max mode should be
+		// THOR
+		// We don't care about Home if we don't have lock yet in Toy mode
 		if(mode == TOY || mode == OF_LOITER){
 			// nothing
 		}else if (mode > ALT_HOLD){
@@ -417,6 +421,8 @@ static void set_mode(byte mode)
 	// if we change modes, we must clear landed flag
 	land_complete 	= false;
 
+	// have we acheived the proper altitude before RTL is enabled
+	rtl_reached_alt = false;
 	// debug to Serial terminal
 	//Serial.println(flight_mode_strings[control_mode]);
 
@@ -492,19 +498,13 @@ static void set_mode(byte mode)
 			do_land();
 			break;
 
-		case APPROACH:
-			yaw_mode 		= LOITER_YAW;
-			roll_pitch_mode = LOITER_RP;
-			throttle_mode 	= THROTTLE_AUTO;
-			do_approach();
-			break;
-
 		case RTL:
 			yaw_mode 		= RTL_YAW;
 			roll_pitch_mode = RTL_RP;
 			throttle_mode 	= RTL_THR;
-
-			do_RTL();
+			rtl_reached_alt = false;
+			set_next_WP(&current_loc);
+			set_new_altitude(get_RTL_alt());
 			break;
 
 		case OF_LOITER:
@@ -514,10 +514,14 @@ static void set_mode(byte mode)
 			set_next_WP(&current_loc);
 			break;
 
+		// THOR
+		// These are the flight modes for Toy mode
+		// See the defines for the enumerated values
 		case TOY:
 			yaw_mode 		= YAW_TOY;
 			roll_pitch_mode = ROLL_PITCH_TOY;
 			throttle_mode 	= THROTTLE_MANUAL;
+			wp_control 		= NO_NAV_MODE;
 			break;
 
 		default:
@@ -649,34 +653,10 @@ void flash_leds(bool on)
 #ifndef DESKTOP_BUILD
 /*
  * Read Vcc vs 1.1v internal reference
- *
- * This call takes about 150us total. ADC conversion is 13 cycles of
- * 125khz default changes the mux if it isn't set, and return last
- * reading (allows necessary settle time) otherwise trigger the
- * conversion
  */
 uint16_t board_voltage(void)
 {
-	const uint8_t mux = (_BV(REFS0)|_BV(MUX4)|_BV(MUX3)|_BV(MUX2)|_BV(MUX1));
-
-	if (ADMUX == mux) {
-		ADCSRA |= _BV(ADSC);                // Convert
-		uint16_t counter=4000; // normally takes about 1700 loops
-		while (bit_is_set(ADCSRA, ADSC) && counter)  // Wait
-			counter--;
-		if (counter == 0) {
-			// we don't actually expect this timeout to happen,
-			// but we don't want any more code that could hang. We
-			// report 0V so it is clear in the logs that we don't know
-			// the value
-			return 0;
-		}
-		uint32_t result = ADCL | ADCH<<8;
-		return 1126400UL / result;       // Read and back-calculate Vcc in mV
-    }
-    // switch mux, settle time is needed. We don't want to delay
-    // waiting for the settle, so report 0 as a "don't know" value
-    ADMUX = mux;
-	return 0; // we don't know the current voltage
+    static AP_AnalogSource_Arduino vcc(ANALOG_PIN_VCC);
+    return vcc.read_vcc();
 }
 #endif

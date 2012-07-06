@@ -51,13 +51,15 @@ public:
 	k_param_format_version = 0,
 	k_param_software_type,
 
+    // simulation
+    k_param_sitl = 10,
 
 	// Misc
 	//
 	k_param_log_bitmask = 20,
     k_param_log_last_filenumber,		// *** Deprecated - remove with next eeprom number change
+	k_param_toy_yaw_rate,				// THOR The memory location for the Yaw Rate 1 = fast, 2 = med, 3 = slow
 
-	#if FRAME_CONFIG ==	HELI_FRAME
 	//
 	// 80: Heli
 	//
@@ -65,7 +67,6 @@ public:
 	k_param_heli_servo_2,
 	k_param_heli_servo_3,
 	k_param_heli_servo_4,
-	#endif
 
 	//
 	// 90: Motors
@@ -99,7 +100,7 @@ public:
 	k_param_auto_slew_rate,
 	k_param_sonar_type,
 	k_param_super_simple,
-	k_param_rtl_land_enabled,
+	k_param_rtl_land_enabled,	// Depricated!!
 	k_param_axis_enabled,
 	k_param_copter_leds_mode, //158
     k_param_ahrs,  // AHRS group
@@ -111,7 +112,7 @@ public:
 	k_param_crosstrack_gain,
 	k_param_auto_land_timeout,
 	k_param_rtl_approach_alt,
-	k_param_retro_loiter,
+	k_param_tilt_comp, //164
 
 
 	//
@@ -140,6 +141,8 @@ public:
 	k_param_camera_pitch_gain,
 	k_param_camera_roll_gain,
     k_param_rc_speed,
+	k_param_camera_pitch_continuous,
+	k_param_camera_roll_continuous,
 
     //
     // 200: flight modes
@@ -213,8 +216,8 @@ public:
 	AP_Float	low_voltage;
 	AP_Int8		super_simple;
 	AP_Int8		rtl_land_enabled;
-	AP_Float	rtl_approach_alt;
-	AP_Int8		retro_loiter;
+	AP_Int16	rtl_approach_alt;
+	AP_Float	tilt_comp;
 	AP_Int8		axis_enabled;
 	AP_Int8		copter_leds_mode;	// Operating mode of LED lighting system
 
@@ -256,7 +259,7 @@ public:
 	//
 	AP_Int16	log_bitmask;
     AP_Int16	log_last_filenumber;		// *** Deprecated - remove with next eeprom number change
-
+	AP_Int8 	toy_yaw_rate;				// THOR The Yaw Rate 1 = fast, 2 = med, 3 = slow
 	AP_Int8		esc_calibrate;
 	AP_Int8		radio_tuning;
 	AP_Int16	radio_tuning_high;
@@ -285,6 +288,8 @@ public:
 
 	AP_Float	camera_pitch_gain;
 	AP_Float	camera_roll_gain;
+	AP_Int8		camera_pitch_continuous;
+	AP_Int8		camera_roll_continuous;
 	AP_Float	stabilize_d;
 	AP_Float	stabilize_d_schedule;
 
@@ -334,9 +339,9 @@ public:
 	optflow_enabled			(OPTFLOW),
 	low_voltage				(LOW_VOLTAGE),
 	super_simple			(SUPER_SIMPLE),
-	rtl_land_enabled		(RTL_AUTO_LAND),
-	rtl_approach_alt		(0.0),
-	retro_loiter			(RETRO_LOITER_MODE),
+	rtl_land_enabled		(0),
+	rtl_approach_alt		(RTL_APPROACH_ALT),
+	tilt_comp				(.0054),
 	axis_enabled			(AXIS_LOCK_ENABLED),
 	copter_leds_mode		(9),
 
@@ -367,6 +372,8 @@ public:
 
 	log_bitmask				(DEFAULT_LOG_BITMASK),
     log_last_filenumber     (0),
+    toy_yaw_rate			(2), // THOR The default Yaw Rate 1 = fast, 2 = med, 3 = slow
+
 	esc_calibrate 			(0),
 	radio_tuning 			(0),
 	radio_tuning_high 		(1000),
@@ -379,6 +386,8 @@ public:
 
 	camera_pitch_gain 		(CAM_PITCH_GAIN),
 	camera_roll_gain 		(CAM_ROLL_GAIN),
+	camera_pitch_continuous	(CAM_PITCH_CONTINUOUS),
+	camera_roll_continuous	(CAM_ROLL_CONTINUOUS),
 	stabilize_d 			(STABILIZE_D),
 	stabilize_d_schedule	(STABILIZE_D_SCHEDULE),
 	acro_p					(ACRO_P),

@@ -23,12 +23,12 @@ public:
                 _ki = 0.0087;
 		_ki_yaw = 0.01;
 
-                _kp = 0.4;
+                _kp.set(0.4);
 		_kp_yaw.set(0.4);
 	}
 
 	// return the smoothed gyro vector corrected for drift
-	Vector3f	get_gyro(void) {return _omega; }
+	Vector3f	get_gyro(void) {return _omega + _omega_P + _omega_yaw_P; }
 	Matrix3f	get_dcm_matrix(void) {return _dcm_matrix; }
 
 	// return the current drift correction integrator value
@@ -44,9 +44,9 @@ public:
 
 	// settable parameters
 	AP_Float	_kp_yaw;
+	AP_Float	_kp;
 
 private:
-	float		_kp;
 	float		_ki;
 	float		_ki_yaw;
 	bool		_have_initial_yaw;
@@ -99,6 +99,9 @@ private:
 
 	// current drift error in earth frame
 	Vector3f	_drift_error_earth;
+
+	// whether we have GPS lock
+	bool		_have_gps_lock;
 };
 
 #endif // AP_AHRS_DCM_H

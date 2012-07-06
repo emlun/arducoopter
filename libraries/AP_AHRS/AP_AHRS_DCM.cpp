@@ -37,6 +37,7 @@ const AP_Param::GroupInfo AP_AHRS::var_info[] PROGMEM = {
 	// @Range: 0 .4
 	// @Increment: .01
     AP_GROUPINFO("YAW_P", 0, AP_AHRS_DCM, _kp_yaw),
+    AP_GROUPINFO("RP_P",  1, AP_AHRS_DCM, _kp),
     AP_GROUPEND
 };
 
@@ -76,10 +77,14 @@ AP_AHRS_DCM::update(void)
 void
 AP_AHRS_DCM::matrix_update(float _G_Dt)
 {
-	// Equation 16, adding proportional and integral correction terms
-	_omega = _gyro_vector + _omega_I + _omega_P + _omega_yaw_P;
+	// note that we do not include the P terms in _omega. This is
+	// because the spin_rate is calculated from _omega.length(),
+	// and including the P terms would give positive feedback into
+	// the _P_gain() calculation, which can lead to a very large P
+	// value
+	_omega = _gyro_vector + _omega_I;
 
-	_dcm_matrix.rotate(_omega * _G_Dt);
+	_dcm_matrix.rotate((_omega + _omega_P + _omega_yaw_P) * _G_Dt);
 }
 
 
@@ -262,6 +267,9 @@ AP_AHRS_DCM::yaw_error_gps(void)
 }
 
 
+// the _P_gain raises the gain of the PI controller
+// when we are spinning fast. See the fastRotations 
+// paper from Bill. 
 float
 AP_AHRS_DCM::_P_gain(float spin_rate)
 {
@@ -297,7 +305,7 @@ AP_AHRS_DCM::drift_correction_yaw(void)
 			new_value = true;
 			yaw_error = yaw_error_compass();
 		}
-	} else if (_gps && _gps->status() == GPS::GPS_OK) {
+	} else if (_fly_forward && _gps && _gps->status() == GPS::GPS_OK) {
 		if (_gps->last_fix_time != _gps_last_update &&
 		    _gps->ground_speed >= GPS_SPEED_MIN) {
 			yaw_deltat = (_gps->last_fix_time - _gps_last_update) * 1.0e-3;
@@ -316,7 +324,7 @@ AP_AHRS_DCM::drift_correction_yaw(void)
 		// we don't have any new yaw information
 		// slowly decay _omega_yaw_P to cope with loss
 		// of our yaw source
-		_omega_yaw_P.z *= 0.97;
+		_omega_yaw_P *= 0.97;
 		return;
 	}
 
@@ -334,7 +342,8 @@ AP_AHRS_DCM::drift_correction_yaw(void)
 	// yaw back to the right value. We use a gain
 	// that depends on the spin rate. See the fastRotations.pdf
 	// paper from Bill Premerlani
-	_omega_yaw_P = error * _P_gain(spin_rate) * _kp_yaw.get();
+
+	_omega_yaw_P.z = error.z * _P_gain(spin_rate) * _kp_yaw.get();
 
 	// don't update the drift term if we lost the yaw reference
 	// for more than 2 seconds
@@ -362,10 +371,8 @@ AP_AHRS_DCM::drift_correction_yaw(void)
 void
 AP_AHRS_DCM::drift_correction(float deltat)
 {
-    Vector3f error;
     Vector3f velocity;
     uint32_t last_correction_time;
-    bool use_gps = true;
 
     // perform yaw drift correction if we have a new yaw reference
     // vector
@@ -378,20 +385,7 @@ AP_AHRS_DCM::drift_correction(float deltat)
     // we have integrated over
     _ra_deltat += deltat;
 
-    // check if we have GPS lock
     if (_gps == NULL || _gps->status() != GPS::GPS_OK) {
-	    use_gps = false;
-    }
-
-    // a copter (which has _fly_forward false) which doesn't have a
-    // compass for yaw can't rely on the GPS velocity lining up with
-    // the earth frame from DCM, so it needs to assume zero velocity
-    // in the drift correction
-    if (!_fly_forward && !(_compass && _compass->use_for_yaw())) {
-	    use_gps = false;
-    }
-
-    if (use_gps == false) {
         // no GPS, or no lock. We assume zero velocity. This at
         // least means we can cope with gyro drift while sitting
         // on a bench with no GPS lock
@@ -402,6 +396,7 @@ AP_AHRS_DCM::drift_correction(float deltat)
         velocity.zero();
 	_last_velocity.zero();
         last_correction_time = millis();
+	_have_gps_lock = false;
     } else {
         if (_gps->last_fix_time == _ra_sum_start) {
             // we don't have a new GPS fix - nothing more to do
@@ -409,15 +404,22 @@ AP_AHRS_DCM::drift_correction(float deltat)
         }
         velocity = Vector3f(_gps->velocity_north(), _gps->velocity_east(), 0);
         last_correction_time = _gps->last_fix_time;
+	if (_have_gps_lock == false) {
+		// if we didn't have GPS lock in the last drift
+		// correction interval then set the velocities equal
+		_last_velocity = velocity;
+	}
+	_have_gps_lock = true;
     }
 
-#if 0
+#define USE_BAROMETER_FOR_VERTICAL_VELOCITY 1
+#if USE_BAROMETER_FOR_VERTICAL_VELOCITY
     /* 
-       NOTE: The barometric vertical acceleration correction is disabled 
-       until we work out how to filter it sufficiently to be usable
-       on ArduCopter
+       The barometer for vertical velocity is only enabled if we got
+       at least 5 pressure samples for the reading. This ensures we
+       don't use very noisy climb rate data
     */
-    if (_barometer != NULL) {
+    if (_barometer != NULL && _barometer->get_pressure_samples() >= 5) {
 	    // Z velocity is down
 	    velocity.z = - _barometer->get_climb_rate();
     }
@@ -431,29 +433,57 @@ AP_AHRS_DCM::drift_correction(float deltat)
         return;
     }
 
-    // get the corrected acceleration vector in earth frame. Units
+    // equation 9: get the corrected acceleration vector in earth frame. Units
     // are m/s/s
-    Vector3f ge;
+    Vector3f GA_e;
     float v_scale = 1.0/(_ra_deltat*_gravity);
-    ge = Vector3f(0, 0, -1.0) + ((velocity - _last_velocity) * v_scale);
-
-    // calculate the error term in earth frame.
-    ge.normalize();
-    _ra_sum.normalize();
-    if (_ra_sum.is_inf() || ge.is_inf()) {
-	    // the _ra_sum length is zero - we are falling with
-	    // no apparent gravity. This gives us no information
-	    // about which way up we are, so treat the error as zero
-	    error = Vector3f(0,0,0);
-    } else {
-	    error = _ra_sum % ge;
+    GA_e = Vector3f(0, 0, -1.0) + ((velocity - _last_velocity) * v_scale);
+    GA_e.normalize();
+    if (GA_e.is_inf()) {
+	    // wait for some non-zero acceleration information
+	    return;
     }
 
-    _error_rp_sum += error.length();
-    _error_rp_count++;
+    // calculate the error term in earth frame.
+    Vector3f GA_b = _ra_sum / _ra_deltat;
+    GA_b.normalize();
+    if (GA_b.is_inf()) {
+	    // wait for some non-zero acceleration information
+	    return;	    
+    }
+    Vector3f error = GA_b % GA_e;
+
+#define YAW_INDEPENDENT_DRIFT_CORRECTION 0
+#if YAW_INDEPENDENT_DRIFT_CORRECTION    
+    // step 2 calculate earth_error_Z
+    float earth_error_Z = error.z;
+
+    // equation 10
+    float tilt = sqrt(sq(GA_e.x) + sq(GA_e.y));
+
+    // equation 11
+    float theta = atan2(GA_b.y, GA_b.x);
+    
+    // equation 12
+    Vector3f GA_e2 = Vector3f(cos(theta)*tilt, sin(theta)*tilt, GA_e.z);
+
+    // step 6
+    error = GA_b % GA_e2;
+    error.z = earth_error_Z;
+#endif // YAW_INDEPENDENT_DRIFT_CORRECTION
+
+    // only use the gps/accelerometers for earth frame yaw correction 
+    // if we are not using a compass. Otherwise we have two competing
+    // controllers for yaw correction
+    if (_compass && _compass->use_for_yaw()) {
+	    error.z = 0;
+    }
 
     // convert the error term to body frame
     error = _dcm_matrix.mul_transpose(error);
+
+    _error_rp_sum += error.length();
+    _error_rp_count++;
 
     // base the P gain on the spin rate
     float spin_rate = _omega.length();

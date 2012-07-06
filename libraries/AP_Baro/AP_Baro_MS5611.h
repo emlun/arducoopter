@@ -13,18 +13,22 @@ class AP_Baro_MS5611 : public AP_Baro
   /* AP_Baro public interface: */
   bool init(AP_PeriodicProcess *scheduler);
   uint8_t read();
-  int32_t get_pressure();     // in mbar*100 units
-  int16_t get_temperature();  // in celsius degrees * 100 units
+  float get_pressure();     // in mbar*100 units
+  float get_temperature();  // in celsius degrees * 100 units
 
   int32_t get_raw_pressure();
   int32_t get_raw_temp();
+
+  void     _calculate();
 
   private:
   /* Asynchronous handler functions: */ 
   static void _update(uint32_t );
   /* Asynchronous state: */
-  static bool _updated;
-  static uint32_t _s_D1, _s_D2;
+  static volatile bool _updated;
+  static volatile uint8_t _d1_count;
+  static volatile uint8_t _d2_count;
+  static volatile uint32_t _s_D1, _s_D2;
   static uint8_t _state;
   static uint32_t _timer;
   /* Gates access to asynchronous state: */
@@ -36,17 +40,15 @@ class AP_Baro_MS5611 : public AP_Baro
   static uint32_t _spi_read_adc();
   static void     _spi_write(uint8_t reg);
 
-  void     _calculate();
 
-  int16_t Temp;
-  int32_t Press;
-  int32_t Alt;
+  float Temp;
+  float Press;
 
   int32_t _raw_press;
   int32_t _raw_temp;
   // Internal calibration registers
   uint16_t C1,C2,C3,C4,C5,C6;
-  uint32_t D1,D2;
+  float D1,D2;
 };
 
 #endif //  __AP_BARO_MS5611_H__

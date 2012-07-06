@@ -186,6 +186,8 @@ static AP_Int8                *flight_modes = &g.flight_mode1;
 #ifdef DESKTOP_BUILD
     AP_Baro_BMP085_HIL barometer;
     AP_Compass_HIL          compass;
+#include <SITL.h>
+	SITL					sitl;
 #else
 
 #if CONFIG_BARO == AP_BARO_BMP085
@@ -331,8 +333,7 @@ static const char* flight_mode_strings[] = {
 	"POSITION",		// 8
 	"LAND",			// 9
 	"OF_LOITER",	// 10
-	"APP",			// 11
-	"TOY"};			// 12
+	"TOY"};			// 11	THOR Added for additional Fligt mode
 
 /* Radio values
 		Channel assignments
@@ -683,11 +684,29 @@ static int16_t 	landing_boost;
 // for controlling the landing throttle curve
 //verifies landings
 static int16_t ground_detector;
+// have we reached our desired altitude brefore heading home?
+static bool	rtl_reached_alt;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Toy Mode
+// Toy Mode - THOR
 ////////////////////////////////////////////////////////////////////////////////
-static byte toy_yaw_rate = 1; // 1 = fast, 2 = med, 3 = slow
+#define TOY_LOOKUP 0
+#define TOY_DELAY	150				// Equal to 1.5 s at 100hz
+static uint8_t 	toy_input_timer;	// A delay timer to engage loiter or WP mode
+static int16_t 	toy_speed;			// TO remember how fast we are going when we enage WP mode
+
+#if TOY_LOOKUP == 1
+static const int16_t  toy_lookup[] = {
+		186, 	373, 	558, 	745,
+		372, 	745, 	1117, 	1490,
+		558, 	1118, 	1675, 	2235,
+		743, 	1490, 	2233, 	2980,
+		929, 	1863, 	2792, 	3725,
+		1115, 	2235, 	3350, 	4470,
+		1301, 	2608, 	3908, 	4500,
+		1487, 	2980, 	4467, 	4500,
+		1673, 	3353, 	4500, 	4500};
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // Navigation general
@@ -782,6 +801,8 @@ static int32_t	nav_yaw;
 // A speed governer for Yaw control - limits the rate the quad can be turned by the autopilot
 static int32_t	auto_yaw;
 // Used to manage the Yaw hold capabilities -
+static bool yaw_stopped;
+static uint8_t yaw_timer;
 // Options include: no tracking, point at next wp, or at a target
 static byte 	yaw_tracking = MAV_ROI_WPNEXT;
 // In AP Mission scripting we have a fine level of control for Yaw
@@ -984,8 +1005,7 @@ void loop()
 		}
 		perf_mon_counter++;
 		if (perf_mon_counter > 600 ) {
-			if (g.log_bitmask & MASK_LOG_PM)
-				Log_Write_Performance();
+            Log_Write_Performance();
 
 			gps_fix_count 		= 0;
 			perf_mon_counter 	= 0;
@@ -1078,7 +1098,7 @@ static void medium_loop()
 				update_navigation();
 
 				// update log
-				if (g.log_bitmask & MASK_LOG_NTUN && motors.armed()){
+				if (motors.armed()){
 					Log_Write_Nav_Tuning();
 				}
 			}
@@ -1095,7 +1115,6 @@ static void medium_loop()
 			//update_altitude();
 			//#endif
 			alt_sensor_flag = true;
-
 			break;
 
 		// This case deals with sending high rate telemetry
@@ -1112,15 +1131,13 @@ static void medium_loop()
 			}
 
             if(motors.armed()){
-                if (g.log_bitmask & MASK_LOG_ATTITUDE_MED)
-                    Log_Write_Attitude();
-                
+                Log_Write_Attitude_Med();
+
                 if(g.log_bitmask & MASK_LOG_INS) {
                     Log_Write_INS();
                 }
 
-				if (g.log_bitmask & MASK_LOG_MOTORS)
-					Log_Write_Motors();
+                Log_Write_Motors();
             }
 			break;
 
@@ -1208,15 +1225,15 @@ static void fifty_hz_loop()
 
 
 	# if HIL_MODE == HIL_MODE_DISABLED
-		if (g.log_bitmask & MASK_LOG_ATTITUDE_FAST && motors.armed())
-			Log_Write_Attitude();
+		if(motors.armed())
+		  Log_Write_Attitude_Fast();
 
 		if(g.log_bitmask & MASK_LOG_INS && motors.armed()) {
 		  Log_Write_INS();
 		}
 
-		if (g.log_bitmask & MASK_LOG_RAW && motors.armed())
-			Log_Write_Raw();
+		if(motors.armed())
+		  Log_Write_Raw();
 	#endif
 
 
@@ -1292,8 +1309,14 @@ static void slow_loop()
 // 1Hz loop
 static void super_slow_loop()
 {
-	if (g.log_bitmask & MASK_LOG_CUR && motors.armed())
+	if(motors.armed())
 		Log_Write_Current();
+
+	#if 0 //CENTER_THROTTLE == 1
+	// recalibrate the throttle_cruise to center on the sticks
+	g.rc_3.set_range((g.throttle_cruise - (MAXIMUM_THROTTLE - g.throttle_cruise)), MAXIMUM_THROTTLE);
+	g.rc_3.set_range_out(0,1000);
+	#endif
 
 	// this function disarms the copter if it has been sitting on the ground for any moment of time greater than 25 seconds
 	// but only of the control mode is manual
@@ -1343,9 +1366,7 @@ static void update_optical_flow(void)
 	log_counter++;
 	if( log_counter >= 5 ) {
 	    log_counter = 0;
-		if (g.log_bitmask & MASK_LOG_OPTFLOW){
-			Log_Write_Optflow();
-		}
+	    Log_Write_Optflow();
 	}
 
 	/*if(g.optflow_enabled && current_loc.alt < 500){
@@ -1449,7 +1470,7 @@ static void update_GPS(void)
 
 			calc_XY_velocity();
 
-			if (g.log_bitmask & MASK_LOG_GPS && motors.armed()){
+			if(motors.armed()){
 				Log_Write_GPS();
 			}
 
@@ -1473,12 +1494,22 @@ void update_yaw_mode(void)
 			break;
 
 		case YAW_HOLD:
-			// calcualte new nav_yaw offset
-			if (control_mode <= STABILIZE){
-				nav_yaw = get_nav_yaw_offset(g.rc_4.control_in, g.rc_3.control_in);
+			if(g.rc_4.control_in != 0){
+				g.rc_4.servo_out = get_acro_yaw(g.rc_4.control_in);
+				yaw_stopped = false;
+				yaw_timer = 150;
+			}else if (!yaw_stopped){
+				g.rc_4.servo_out = get_acro_yaw(0);
+				yaw_timer--;
+				if(yaw_timer == 0){
+					yaw_stopped = true;
+					nav_yaw = ahrs.yaw_sensor;
+				}
 			}else{
-				nav_yaw = get_nav_yaw_offset(g.rc_4.control_in, 1);
+				nav_yaw = get_nav_yaw_offset(g.rc_4.control_in, g.rc_3.control_in);
+				g.rc_4.servo_out = get_stabilize_yaw(nav_yaw);
 			}
+			return;
 			break;
 
 		case YAW_LOOK_AT_HOME:
@@ -1486,14 +1517,9 @@ void update_yaw_mode(void)
 			break;
 
 		case YAW_AUTO:
-			nav_yaw += constrain(wrap_180(auto_yaw - nav_yaw), -20, 20); // 40 deg a second
+			nav_yaw += constrain(wrap_180(auto_yaw - nav_yaw), -60, 60); // 40 deg a second
 			//Serial.printf("nav_yaw %d ", nav_yaw);
 			nav_yaw  = wrap_360(nav_yaw);
-			break;
-
-		case YAW_TOY:
-			// handle Yaw in roll_pitch_mode
-			return;
 			break;
 	}
 
@@ -1506,7 +1532,6 @@ void update_yaw_mode(void)
 void update_roll_pitch_mode(void)
 {
 	int control_roll, control_pitch;
-	int yaw_rate;
 
 
 	// hack to do auto_flip - need to remove, no one is using.
@@ -1582,26 +1607,10 @@ void update_roll_pitch_mode(void)
 			g.rc_2.servo_out = get_stabilize_pitch(get_of_pitch(g.rc_2.control_in));
 			break;
 
+		// THOR
+		// a call out to the main toy logic
 		case ROLL_PITCH_TOY:
-
-			yaw_rate = g.rc_1.control_in / toy_yaw_rate;
-
-			//yaw_rate = constrain(yaw_rate, -4500, 4500);
-
-			if (g.rc_7.radio_in > 1800){
-				// acro Yaw
-				g.rc_4.servo_out = get_acro_yaw(yaw_rate); // a 15° sec yaw
-			}else{
-				nav_yaw = get_nav_yaw_offset(yaw_rate, g.rc_3.control_in);
-				g.rc_4.servo_out = get_stabilize_yaw(nav_yaw);
-			}
-
-			// yaw_rate = roll angle
-			yaw_rate = (g_gps->ground_speed / 1200) * yaw_rate;
-			yaw_rate = min(yaw_rate, (4500 / toy_yaw_rate)); // 1(fast), 2, 3(slow)
-
-			g.rc_1.servo_out = get_stabilize_roll(yaw_rate);// our roll defined by speed and yaw rate
-			g.rc_2.servo_out = get_stabilize_pitch(g.rc_2.control_in);
+			roll_pitch_toy();
 			break;
 	}
 
@@ -1694,7 +1703,7 @@ void update_throttle_mode(void)
 				}
 				// calc average throttle
 				if ((g.rc_3.control_in > g.throttle_min) && abs(climb_rate) < 60){
-					throttle_avg = throttle_avg * .98 + (float)g.rc_3.control_in * .02;
+					throttle_avg = throttle_avg * .99 + (float)g.rc_3.control_in * .01;
 					g.throttle_cruise = throttle_avg;
 				}
 				#endif
@@ -1831,23 +1840,19 @@ static void update_navigation()
 			break;
 
 		case RTL:
-			// We have reached Home
-			if((wp_distance <= g.waypoint_radius) || check_missed_wp()){
-				// if loiter_timer value > 0, we are set to trigger auto_land or approach after 20 seconds
-				set_mode(LOITER);
-				// force loitering above home
-				next_WP.lat = home.lat;
-				next_WP.lng = home.lng;
-
-				if(g.rtl_land_enabled || failsafe)
-					loiter_timer = millis();
-				else
-					loiter_timer = 0;
-				break;
+			// have we reached the desired Altitude?
+			if(alt_change_flag <= REACHED_ALT){ // we are at or above the target alt
+				if(rtl_reached_alt == false){
+					rtl_reached_alt = true;
+					do_RTL();
+				}
+				wp_control = WP_MODE;
+				// checks if we have made it to home
+				update_nav_RTL();
+			} else{
+				// we need to loiter until we are ready to come home
+				wp_control = LOITER_MODE;
 			}
-
-			wp_control = WP_MODE;
-			slow_wp = true;
 
 			// calculates desired Yaw
 			#if FRAME_CONFIG ==	HELI_FRAME
@@ -1879,7 +1884,7 @@ static void update_navigation()
 				next_WP.lat = current_loc.lat;
 				next_WP.lng = current_loc.lng;
 
-				if( g.rc_2.control_in == 0 && g.rc_1.control_in == 0 ){
+				if(g.rc_2.control_in == 0 && g.rc_1.control_in == 0){
 					loiter_override 	= false;
 					wp_control 			= LOITER_MODE;
 				}
@@ -1889,19 +1894,19 @@ static void update_navigation()
 
 			if(loiter_timer != 0){
 				// If we have a safe approach alt set and we have been loitering for 20 seconds(default), begin approach
-				if(g.rtl_approach_alt >= 1 && (millis() - loiter_timer) > (RTL_APPROACH_DELAY * 1000)){
+				if((millis() - loiter_timer) > (uint32_t)g.auto_land_timeout.get()){
 					// just to make sure we clear the timer
 					loiter_timer = 0;
-					set_mode(APPROACH);
-				}
-				// Kick us out of loiter and begin landing if the loiter_timer is set
-				else if((millis() - loiter_timer) > (uint32_t)g.auto_land_timeout.get()){
-					// just to make sure we clear the timer
-					loiter_timer = 0;
-					set_mode(LAND);
-					if(home_distance < 300){
-						next_WP.lat = home.lat;
-						next_WP.lng = home.lng;
+					if(g.rtl_approach_alt == 0){
+						set_mode(LAND);
+						if(home_distance < 300){
+							next_WP.lat = home.lat;
+							next_WP.lng = home.lng;
+						}
+					}else{
+						if(g.rtl_approach_alt < current_loc.alt){
+							set_new_altitude(g.rtl_approach_alt);
+						}
 					}
 				}
 			}
@@ -1920,11 +1925,6 @@ static void update_navigation()
 			update_nav_wp();
 			break;
 
-		case APPROACH:
-			// calculates the desired Roll and Pitch
-			update_nav_wp();
-			break;
-
 		case CIRCLE:
 			yaw_tracking	= MAV_ROI_WPNEXT;
 			wp_control 		= CIRCLE_MODE;
@@ -1939,6 +1939,10 @@ static void update_navigation()
 			update_nav_wp();
 			break;
 
+		// THOR added to enable Virtual WP nav
+		case TOY:
+			update_nav_wp();
+			break;
 	}
 
 	// are we in SIMPLE mode?
@@ -1959,6 +1963,32 @@ static void update_navigation()
 			nav_yaw = 0;
 		}
 	}
+}
+
+static void update_nav_RTL()
+{
+	// Have we have reached Home?
+	if(wp_distance <= g.waypoint_radius){
+		// if loiter_timer value > 0, we are set to trigger auto_land or approach
+		set_mode(LOITER);
+
+		// just un case we arrive and we aren't at the lower RTL alt yet.
+		set_new_altitude(get_RTL_alt());
+
+		// force loitering above home
+		next_WP.lat = home.lat;
+		next_WP.lng = home.lng;
+
+		// If land is enabled OR failsafe OR auto approach altitude is set
+		// we will go into automatic land, (g.rtl_approach_alt) is the lowest point
+		// -1 means disable feature
+		if(failsafe || g.rtl_approach_alt >= 0)
+			loiter_timer = millis();
+		else
+			loiter_timer = 0;
+	}
+
+	slow_wp = true;
 }
 
 static void read_AHRS(void)
@@ -2090,8 +2120,8 @@ static void update_altitude_est()
 		update_altitude();
 		alt_sensor_flag = false;
 
-		if(g.log_bitmask & MASK_LOG_CTUN && motors.armed()){
-			Log_Write_Control_Tuning();
+		if(motors.armed()) {
+		  Log_Write_Control_Tuning();
 		}
 
 	}else{
@@ -2111,9 +2141,9 @@ adjust_altitude()
 		manual_boost = (g.rc_3.control_in - g.throttle_min) - THROTTLE_ADJUST;
 		manual_boost = max(-THROTTLE_ADJUST, manual_boost);
 
-	}else if  (g.rc_3.control_in >= (MAXIMUM_THROTTLE - THROTTLE_ADJUST)){
+	}else if  (g.rc_3.control_in >= (g.throttle_max - THROTTLE_ADJUST)){
 		// we add 0 to 100 PWM to hover
-		manual_boost = g.rc_3.control_in - (MAXIMUM_THROTTLE - THROTTLE_ADJUST);
+		manual_boost = g.rc_3.control_in - (g.throttle_max - THROTTLE_ADJUST);
 		manual_boost = min(THROTTLE_ADJUST, manual_boost);
 
 	}else {
@@ -2304,7 +2334,7 @@ static void update_nav_wp()
 		next_WP.lat = circle_WP.lat + (g.loiter_radius * 100 * sin(1.57 - circle_angle));
 
 		// calc the lat and long error to the target
-		calc_location_error(&circle_WP);
+		calc_location_error(&next_WP);
 
 		// use error as the desired rate towards the target
 		// nav_lon, nav_lat is calculated
@@ -2329,8 +2359,8 @@ static void update_nav_wp()
 		// use error as the desired rate towards the target
 		calc_nav_rate(speed);
 
-		// rotate pitch and roll to the copter frame of reference
-		//calc_loiter_pitch_roll();
+	}else if(wp_control == TOY_MODE){ // THOR added to navigate to Virtual WP
+		calc_nav_rate(toy_speed);
 
 	}else if(wp_control == NO_NAV_MODE){
 		// clear out our nav so we can do things like land straight down

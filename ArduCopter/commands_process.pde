@@ -64,7 +64,13 @@ static void update_commands()
 			if (land_complete == true){
 				// we will disarm the motors after landing.
 			} else {
-				set_mode(LAND);
+				// If the approach altitude is valid (above 1m), do approach, else land
+				if(g.rtl_approach_alt == 0){
+					set_mode(LAND);
+				}else{
+					set_mode(LOITER);
+					set_new_altitude(g.rtl_approach_alt);
+				}
 			}
 		}
 	}
@@ -126,8 +132,7 @@ static void execute_nav_command(void)
 	g.command_index  = command_nav_index;
 
 	// Save CMD to Log
-	if (g.log_bitmask & MASK_LOG_CMD)
-		Log_Write_Cmd(g.command_index, &command_nav_queue);
+	Log_Write_Cmd(g.command_index, &command_nav_queue);
 
 	// clear navigation prameters
 	reset_nav_params();

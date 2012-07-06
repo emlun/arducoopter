@@ -85,7 +85,7 @@ static struct Location get_cmd_with_index(int i)
 static void set_cmd_with_index(struct Location temp, int i)
 {
 	i = constrain(i, 0, g.command_total.get());
-	uint32_t mem = WP_START_BYTE + (i * WP_SIZE);
+	intptr_t mem = WP_START_BYTE + (i * WP_SIZE);
 
 	// Set altitude options bitmask
 	// XXX What is this trying to do?
@@ -157,10 +157,6 @@ static void set_next_WP(struct Location *wp)
 	loiter_sum 			= 0;
 	loiter_total 		= 0;
 
-	// this is used to offset the shrinking longitude as we go towards the poles
-	float rads 			= (fabs((float)next_WP.lat)/t7) * 0.0174532925;
-	scaleLongDown 		= cos(rads);
-	scaleLongUp 		= 1.0f/cos(rads);	
 	// this is handy for the groundstation
 	wp_totalDistance 	= get_distance(&current_loc, &next_WP);
 	wp_distance 		= wp_totalDistance;
@@ -190,11 +186,6 @@ static void set_guided_WP(void)
 	// -----------------------------------------------
 	target_altitude = current_loc.alt;
 	offset_altitude = next_WP.alt - prev_WP.alt;
-
-	// this is used to offset the shrinking longitude as we go towards the poles
-	float rads 			= (abs(next_WP.lat)/t7) * 0.0174532925;
-	scaleLongDown 		= cos(rads);
-	scaleLongUp 		= 1.0f/cos(rads);
 
 	// this is handy for the groundstation
 	wp_totalDistance 	= get_distance(&current_loc, &next_WP);

@@ -5,6 +5,7 @@
 #include <AP_Math.h>		// ArduPilot Mega Vector/Matrix math Library
 #include <I2C.h>
 #include <SPI.h>
+#include <Filter.h>
 #include <Arduino_Mega_ISR_Registry.h>
 #include <AP_PeriodicProcess.h>
 #include <AP_Baro.h> // ArduPilot Mega ADC Library
@@ -33,18 +34,16 @@ void setup()
 	SPI.setClockDivider(SPI_CLOCK_DIV32); // 500khz for debugging, increase later
 
 	baro.init(&scheduler);
-	timer = micros();
+	baro.calibrate(delay);
+	timer = millis();
 }
 
 void loop()
 {
-	float tmp_float;
-	float Altitude;
-
-	if((micros()- timer) > 50000L){
+	if((micros() - timer) > 100000UL){
 		timer = micros();
 		baro.read();
-		unsigned long read_time = micros() - timer;
+		uint32_t read_time = micros() - timer;
 		if (!baro.healthy) {
 			Serial.println("not healthy");
 			return;
@@ -54,11 +53,11 @@ void loop()
 		Serial.print(" Temperature:");
 		Serial.print(baro.get_temperature());
 		Serial.print(" Altitude:");
-		tmp_float = (baro.get_pressure() / 101325.0);
-		tmp_float = pow(tmp_float, 0.190295);
-		Altitude = 44330.0 * (1.0 - tmp_float);
-		Serial.print(Altitude);
-		Serial.printf(" t=%u", (unsigned)read_time);
+		Serial.print(baro.get_altitude());
+		Serial.printf(" climb=%.2f t=%u samples=%u", 
+			      baro.get_climb_rate(),
+			      (unsigned)read_time,
+			      (unsigned)baro.get_pressure_samples());
 		Serial.println();
 	}
 }

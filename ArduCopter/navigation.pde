@@ -50,11 +50,12 @@ static void calc_XY_velocity(){
 	last_longitude 	= g_gps->longitude;
 	last_latitude 	= g_gps->latitude;
 
-	if(g_gps->ground_speed > 150){
+	/*if(g_gps->ground_speed > 150){
 		float temp = radians((float)g_gps->ground_course/100.0);
 		x_actual_speed = (float)g_gps->ground_speed * sin(temp);
 		y_actual_speed = (float)g_gps->ground_speed * cos(temp);
-	}
+	}*/
+
 
 	#if INERTIAL_NAV == ENABLED
 	  // inertial_nav
@@ -100,7 +101,7 @@ static void calc_loiter(int x_error, int y_error)
 
 #if LOGGING_ENABLED == ENABLED
 	// log output if PID logging is on and we are tuning the yaw
-	if( g.log_bitmask & MASK_LOG_PID && (g.radio_tuning == CH6_LOITER_KP || g.radio_tuning == CH6_LOITER_KI) ) {
+	if(g.radio_tuning == CH6_LOITER_KP || g.radio_tuning == CH6_LOITER_KI) {
 		Log_Write_PID(CH6_LOITER_KP, x_error, x_target_speed, 0, 0, x_target_speed, tuning_value);
 	}
 #endif
@@ -129,7 +130,7 @@ static void calc_loiter(int x_error, int y_error)
 
 #if LOGGING_ENABLED == ENABLED
 	// log output if PID logging is on and we are tuning the yaw
-	if( g.log_bitmask & MASK_LOG_PID && (g.radio_tuning == CH6_LOITER_RATE_KP || g.radio_tuning == CH6_LOITER_RATE_KI || g.radio_tuning == CH6_LOITER_RATE_KD) ) {
+	if(g.radio_tuning == CH6_LOITER_RATE_KP || g.radio_tuning == CH6_LOITER_RATE_KI || g.radio_tuning == CH6_LOITER_RATE_KD) {
 		Log_Write_PID(CH6_LOITER_RATE_KP, x_rate_error, p, i, d, nav_lon, tuning_value);
 	}
 #endif
@@ -139,7 +140,7 @@ static void calc_loiter(int x_error, int y_error)
 
 #if LOGGING_ENABLED == ENABLED
 	// log output if PID logging is on and we are tuning the yaw
-	if( g.log_bitmask & MASK_LOG_PID && (g.radio_tuning == CH6_LOITER_KP || g.radio_tuning == CH6_LOITER_KI) ) {
+	if(g.radio_tuning == CH6_LOITER_KP || g.radio_tuning == CH6_LOITER_KI) {
 		Log_Write_PID(CH6_LOITER_KP+100, y_error, y_target_speed, 0, 0, y_target_speed, tuning_value);
 	}
 #endif
@@ -166,7 +167,7 @@ static void calc_loiter(int x_error, int y_error)
 
 #if LOGGING_ENABLED == ENABLED
 	// log output if PID logging is on and we are tuning the yaw
-	if( g.log_bitmask & MASK_LOG_PID && (g.radio_tuning == CH6_LOITER_RATE_KP || g.radio_tuning == CH6_LOITER_RATE_KI || g.radio_tuning == CH6_LOITER_RATE_KD) ) {
+	if(g.radio_tuning == CH6_LOITER_RATE_KP || g.radio_tuning == CH6_LOITER_RATE_KI || g.radio_tuning == CH6_LOITER_RATE_KD) {
 		Log_Write_PID(CH6_LOITER_RATE_KP+100, y_rate_error, p, i, d, nav_lat, tuning_value);
 	}
 #endif
@@ -201,12 +202,25 @@ static void calc_nav_rate(int max_speed)
 	x_rate_error 	= x_target_speed - x_actual_speed; // 413
 	x_rate_error 	= constrain(x_rate_error, -1000, 1000);
 	nav_lon			= g.pid_nav_lon.get_pid(x_rate_error, dTnav);
+	temp			= x_target_speed * x_target_speed;
+	temp			*= g.tilt_comp;
+
+	if(x_target_speed < 0)
+		temp = -temp;
+	nav_lon			+= temp;
 	nav_lon			= constrain(nav_lon, -3000, 3000);
+
 
 	// North / South
 	y_rate_error 	= y_target_speed - y_actual_speed; // 413
 	y_rate_error 	= constrain(y_rate_error, -1000, 1000);	// added a rate error limit to keep pitching down to a minimum
 	nav_lat			= g.pid_nav_lat.get_pid(y_rate_error, dTnav);
+	temp			= y_target_speed * y_target_speed;
+	temp			*= g.tilt_comp;
+
+	if(y_target_speed < 0)
+		temp = -temp;
+	nav_lat			+= temp;
 	nav_lat			= constrain(nav_lat, -3000, 3000);
 
 	// copy over I term to Loiter_Rate
@@ -251,7 +265,7 @@ static int16_t calc_desired_speed(int16_t max_speed, bool _slow)
 	// limit the ramp up of the speed
 	// waypoint_speed_gov is reset to 0 at each new WP command
 	if(max_speed > waypoint_speed_gov){
-		waypoint_speed_gov += (int)(100.0 * dTnav); // increase at .5/ms
+		waypoint_speed_gov += (int)(200.0 * dTnav); // increase at .5/ms
 		max_speed = waypoint_speed_gov;
 	}
 
@@ -410,36 +424,3 @@ static int32_t wrap_180(int32_t error)
 	return error;
 }
 
-/*
-//static int32_t get_altitude_above_home(void)
-{
-	// This is the altitude above the home location
-	// The GPS gives us altitude at Sea Level
-	// if you slope soar, you should see a negative number sometimes
-	// -------------------------------------------------------------
-	return current_loc.alt - home.alt;
-}
-*/
-
-// distance is returned in cm
-static int32_t get_distance(struct Location *loc1, struct Location *loc2)
-{
-	float dlat 		= (float)(loc2->lat - loc1->lat);
-	float dlong		= ((float)(loc2->lng - loc1->lng)) * scaleLongDown;
-	dlong			= sqrt(sq(dlat) + sq(dlong)) * 1.113195;
-	return			dlong;
-}
-/*
-//static int32_t get_alt_distance(struct Location *loc1, struct Location *loc2)
-{
-	return abs(loc1->alt - loc2->alt);
-}
-*/
-static int32_t get_bearing(struct Location *loc1, struct Location *loc2)
-{
-	int32_t off_x = loc2->lng - loc1->lng;
-	int32_t off_y = (loc2->lat - loc1->lat) * scaleLongUp;
-	int32_t bearing =	9000 + atan2(-off_y, off_x) * 5729.57795;
-	if (bearing < 0) bearing += 36000;
-	return bearing;
-}

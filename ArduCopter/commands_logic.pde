@@ -104,18 +104,6 @@ static void process_now_command()
 	}
 }
 
-
-//static void handle_no_commands()
-/*{
-	switch (control_mode){
-		default:
-			set_mode(RTL);
-			break;
-	}
-	return;
-	Serial.println("Handle No CMDs");
-}*/
-
 /********************************************************************************/
 // Verify command Handlers
 /********************************************************************************/
@@ -198,7 +186,7 @@ static void do_RTL(void)
 {
 	// TODO: Altitude option from mission planner
 	Location temp	= home;
-	temp.alt		= read_alt_to_hold();
+	temp.alt		= get_RTL_alt();
 
 	//so we know where we are navigating from
 	// --------------------------------------
@@ -228,14 +216,8 @@ static void do_takeoff()
 	// Start with current location
 	Location temp = current_loc;
 
-	// command_nav_queue.alt is a relative altitude!!!
-	if (command_nav_queue.options & MASK_OPTIONS_RELATIVE_ALT) {
-		temp.alt = command_nav_queue.alt + home.alt;
-		//Serial.printf("rel alt: %ld",temp.alt);
-	} else {
-		temp.alt = command_nav_queue.alt;
-		//Serial.printf("abs alt: %ld",temp.alt);
-	}
+	// alt is always relative
+	temp.alt = command_nav_queue.alt;
 
 	// prevent flips
 	reset_I_all();
@@ -248,12 +230,7 @@ static void do_nav_wp()
 {
 	wp_control = WP_MODE;
 
-	// command_nav_queue.alt is a relative altitude!!!
-	if (command_nav_queue.options & MASK_OPTIONS_RELATIVE_ALT) {
-		command_nav_queue.alt	+= home.alt;
-	}
 	set_next_WP(&command_nav_queue);
-
 
 	// this is our bitmask to verify we have met all conditions to move on
 	wp_verify_byte 	= 0;
@@ -264,9 +241,7 @@ static void do_nav_wp()
 	// this is the delay, stored in seconds and expanded to millis
 	loiter_time_max = command_nav_queue.p1 * 1000;
 
-	// if we don't require an altitude minimum, we save this flag as passed (1)
-	if((next_WP.options & MASK_OPTIONS_RELATIVE_ALT) == 0){
-		// we don't need to worry about it
+	if((next_WP.options & WP_OPTION_ALT_REQUIRED) == false){
 		wp_verify_byte |= NAV_ALTITUDE;
 	}
 }
@@ -290,38 +265,6 @@ static void do_land()
 
 	// Set a new target altitude very low, incase we are landing on a hill!
 	set_new_altitude(-1000);
-}
-
-static void do_approach()
-{
-	// Set a contrained value to EEPROM
-	g.rtl_approach_alt.set(constrain((float)g.rtl_approach_alt, 1.0, 10.0));
-
-	// Get the target_alt in cm
-	uint16_t target_alt = (uint16_t)(g.rtl_approach_alt * 100);
-
-	// Make sure we are not using this to land and that we are currently above the target approach alt
-	if(g.rtl_approach_alt >= 1 && current_loc.alt > target_alt){
-		wp_control = LOITER_MODE;
-
-		// just to make sure
-		land_complete		= false;
-
-		// landing boost lowers the main throttle to mimmick
-		// the effect of a user's hand
-		landing_boost 		= 0;
-
-		// A counter that goes up if our climb rate stalls out.
-		ground_detector 	= 0;
-
-		// hold at our current location
-		set_next_WP(&current_loc);
-
-		// Set target alt based on user setting
-		set_new_altitude(target_alt);
-	} else {
-		set_mode(LOITER);
-	}
 }
 
 static void do_loiter_unlimited()
@@ -473,10 +416,9 @@ static bool verify_land_baro()
 static bool verify_nav_wp()
 {
 	// Altitude checking
-	if(next_WP.options & MASK_OPTIONS_RELATIVE_ALT){
+	if(next_WP.options & WP_OPTION_ALT_REQUIRED){
 		// we desire a certain minimum altitude
-		//if (current_loc.alt > next_WP.alt){
-		if (current_loc.alt > target_altitude){
+		if(alt_change_flag == REACHED_ALT){
 
 			// we have reached that altitude
 			wp_verify_byte |= NAV_ALTITUDE;
@@ -561,7 +503,6 @@ static bool verify_loiter_turns()
 
 static bool verify_RTL()
 {
-	// loiter at the WP
 	wp_control 	= WP_MODE;
 
 	// Did we pass the WP?	// Distance checking

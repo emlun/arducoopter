@@ -68,14 +68,6 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
-// MAVLINK10
-//
-#ifndef MAVLINK10
-# define MAVLINK10	ENABLED
-#endif
-
-
-//////////////////////////////////////////////////////////////////////////////
 // FRAME_CONFIG
 //
 #ifndef FRAME_CONFIG
@@ -354,6 +346,15 @@
 # define CAM_PITCH_GAIN			1.0
 #endif
 
+//////////////////////////////////////////////////////////////////////////////
+//  CAMERA SERVO TYPE
+#ifndef CAM_PITCH_CONTINUOUS
+# define CAM_PITCH_CONTINUOUS           0
+#endif
+#ifndef CAM_ROLL_CONTINUOUS
+# define CAM_ROLL_CONTINUOUS            0
+#endif
+
 
 //////////////////////////////////////////////////////////////////////////////
 //  OPTICAL_FLOW
@@ -448,7 +449,7 @@
 #endif
 
 #ifndef AUTO_LAND_TIME
-# define AUTO_LAND_TIME	20
+# define AUTO_LAND_TIME	10
 #endif
 
 
@@ -559,15 +560,9 @@
 # define SUPER_SIMPLE_RADIUS	1000
 #endif
 
-
 // RTL Mode
-#ifndef RTL_AUTO_LAND
-# define RTL_AUTO_LAND 		ENABLED
-#endif
-
-// RTL Approach Delay in seconds
-#ifndef RTL_APPROACH_DELAY
-# define RTL_APPROACH_DELAY	20
+#ifndef RTL_APPROACH_ALT
+# define RTL_APPROACH_ALT 	200
 #endif
 
 
@@ -628,7 +623,7 @@
 # define STABILIZE_ROLL_P 		4.5
 #endif
 #ifndef STABILIZE_ROLL_I
-# define STABILIZE_ROLL_I 		0.1
+# define STABILIZE_ROLL_I 		0.01
 #endif
 #ifndef STABILIZE_ROLL_IMAX
 # define STABILIZE_ROLL_IMAX 	40		// degrees
@@ -638,7 +633,7 @@
 # define STABILIZE_PITCH_P		4.5
 #endif
 #ifndef STABILIZE_PITCH_I
-# define STABILIZE_PITCH_I		0.1
+# define STABILIZE_PITCH_I		0.01
 #endif
 #ifndef STABILIZE_PITCH_IMAX
 # define STABILIZE_PITCH_IMAX	40		// degrees
@@ -648,7 +643,7 @@
 # define STABILIZE_YAW_P		7.0		// increase for more aggressive Yaw Hold, decrease if it's bouncy
 #endif
 #ifndef  STABILIZE_YAW_I
-# define STABILIZE_YAW_I		0.01
+# define STABILIZE_YAW_I		0.02
 #endif
 #ifndef  STABILIZE_YAW_IMAX
 # define STABILIZE_YAW_IMAX		8		// degrees * 100
@@ -688,7 +683,7 @@
 # define RATE_YAW_P    		 .13
 #endif
 #ifndef RATE_YAW_I
-# define RATE_YAW_I    		 0.0
+# define RATE_YAW_I    		 0.02
 #endif
 #ifndef RATE_YAW_D
 # define RATE_YAW_D    		 0.000
@@ -739,10 +734,10 @@
 // WP Navigation control gains
 //
 #ifndef NAV_P
-# define NAV_P				2.5			//
+# define NAV_P				2.4			//
 #endif
 #ifndef NAV_I
-# define NAV_I				0.20		// Wind control
+# define NAV_I				0.17		// Wind control
 #endif
 #ifndef NAV_D
 # define NAV_D				0.00		//
@@ -777,10 +772,10 @@
 #endif
 
 #ifndef ALT_HOLD_P
-# define ALT_HOLD_P			0.8		// .5
+# define ALT_HOLD_P			0.4		// .5
 #endif
 #ifndef ALT_HOLD_I
-# define ALT_HOLD_I			0.007
+# define ALT_HOLD_I			0.038
 #endif
 #ifndef ALT_HOLD_IMAX
 # define ALT_HOLD_IMAX		300
@@ -794,7 +789,7 @@
 # define THROTTLE_I			0.0		// Don't edit
 #endif
 #ifndef THROTTLE_D
-# define THROTTLE_D			0.02	//
+# define THROTTLE_D			0.0	//
 #endif
 #ifndef THROTTLE_IMAX
 # define THROTTLE_IMAX		300
@@ -947,7 +942,7 @@
 // Navigation defaults
 //
 #ifndef WP_RADIUS_DEFAULT
-# define WP_RADIUS_DEFAULT	1
+# define WP_RADIUS_DEFAULT	2
 #endif
 
 #ifndef LOITER_RADIUS
@@ -998,10 +993,6 @@
 # define QUATERNION_ENABLE DISABLED
 #endif
 
-
-#ifndef RETRO_LOITER_MODE
-# define RETRO_LOITER_MODE DISABLED
-#endif
 
 #ifndef ALTERNATIVE_YAW_MODE
 # define ALTERNATIVE_YAW_MODE DISABLED
