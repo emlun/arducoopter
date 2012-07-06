@@ -1114,6 +1114,10 @@ static void medium_loop()
             if(motors.armed()){
                 if (g.log_bitmask & MASK_LOG_ATTITUDE_MED)
                     Log_Write_Attitude();
+                
+                if(g.log_bitmask & MASK_LOG_INS) {
+                    Log_Write_INS();
+                }
 
 				if (g.log_bitmask & MASK_LOG_MOTORS)
 					Log_Write_Motors();
@@ -1206,6 +1210,10 @@ static void fifty_hz_loop()
 	# if HIL_MODE == HIL_MODE_DISABLED
 		if (g.log_bitmask & MASK_LOG_ATTITUDE_FAST && motors.armed())
 			Log_Write_Attitude();
+
+		if(g.log_bitmask & MASK_LOG_INS && motors.armed()) {
+		  Log_Write_INS();
+		}
 
 		if (g.log_bitmask & MASK_LOG_RAW && motors.armed())
 			Log_Write_Raw();

@@ -883,10 +883,18 @@
 #ifndef LOG_PID
 # define LOG_PID				DISABLED
 #endif
+// Inertial Navigation System
+// See Log_Write_INS() in Log.pde
+#ifndef LOG_INS
+# define LOG_INS				ENABLED
+#endif
+
 
 // calculate the default log_bitmask
 #define LOGBIT(_s)     (LOG_##_s ? MASK_LOG_##_s : 0)
 
+// WARNING: Will probably not support more than 16 modes, because
+// g.log_bitmask is AP_Int16 at the time of writing this.
 #define DEFAULT_LOG_BITMASK \
 			LOGBIT(ATTITUDE_FAST)	| \
 			LOGBIT(ATTITUDE_MED)	| \
@@ -900,7 +908,8 @@
 			LOGBIT(CUR)				| \
 			LOGBIT(MOTORS)			| \
 			LOGBIT(OPTFLOW)			| \
-			LOGBIT(PID)
+			LOGBIT(PID)             | \
+			LOGBIT(INS)
 
 // if we are using fast, Disable Medium
 //#if LOG_ATTITUDE_FAST == ENABLED

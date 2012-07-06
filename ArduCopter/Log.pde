@@ -86,6 +86,7 @@ print_log_menu(void)
 		if (g.log_bitmask & MASK_LOG_MOTORS)		Serial.printf_P(PSTR(" MOTORS"));
 		if (g.log_bitmask & MASK_LOG_OPTFLOW)		Serial.printf_P(PSTR(" OPTFLOW"));
 		if (g.log_bitmask & MASK_LOG_PID)			Serial.printf_P(PSTR(" PID"));
+		if (g.log_bitmask & MASK_LOG_INS)			Serial.printf_P(PSTR(" INS"));
 	}
 
 	Serial.println();
@@ -323,6 +324,45 @@ static void Log_Read_Raw()
 	}
 	Serial.println(" ");
 }
+
+static void Log_Write_INS() {
+  DataFlash.WriteByte(HEAD_BYTE1);
+  DataFlash.WriteByte(HEAD_BYTE2);
+  DataFlash.WriteByte(LOG_INS_MSG);
+  
+  DataFlash.WriteLong(get_int(accels_acceleration.x));
+  DataFlash.WriteLong(get_int(accels_acceleration.y));
+  DataFlash.WriteLong(get_int(accels_acceleration.z));
+  
+  DataFlash.WriteLong(get_int(accels_velocity.x));
+  DataFlash.WriteLong(get_int(accels_velocity.y));
+  DataFlash.WriteLong(get_int(accels_velocity.z));
+  
+  DataFlash.WriteLong(get_int(accels_position.x));
+  DataFlash.WriteLong(get_int(accels_position.y));
+  DataFlash.WriteLong(get_int(accels_position.z));
+  
+  DataFlash.WriteLong(get_int(accels_offset.x));
+  DataFlash.WriteLong(get_int(accels_offset.y));
+  DataFlash.WriteLong(get_int(accels_offset.z));
+
+  Vector3f cartesian_gps = gps_to_cartesian();
+  DataFlash.WriteLong(get_int(cartesian_gps.x));
+  DataFlash.WriteLong(get_int(cartesian_gps.y));
+  DataFlash.WriteLong(get_int(cartesian_gps.z));
+}
+
+static void Log_Read_INS() {
+  float logvar;
+  Serial.print("INS");
+  for (int y = 0; y < 18; y++) {
+    Serial.print(", ");
+    logvar = get_float(DataFlash.ReadLong());
+    Serial.print(logvar);
+  }
+  Serial.println(" ");
+}
+        
 #else
 static void Log_Write_Raw()
 {
@@ -1001,6 +1041,10 @@ static int Log_Read_Process(int start_page, int end_page)
 					case LOG_PID_MSG:
 						Log_Read_PID();
 						break;
+
+				case LOG_INS_MSG:
+				  Log_Read_INS();
+				  break;
 				}
 				break;
 			case 3:
