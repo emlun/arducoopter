@@ -247,9 +247,7 @@ static void Log_Write_GPS()
 	  return;
 	}
 
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_GPS_MSG);
+	Log_Write_Header(LOG_GPS_MSG);
 
 	DataFlash.WriteLong(g_gps->time);						// 1
 	DataFlash.WriteByte(g_gps->num_sats);					// 2
@@ -262,7 +260,7 @@ static void Log_Write_GPS()
 	DataFlash.WriteInt(g_gps->ground_speed);				// 7
 	DataFlash.WriteLong(g_gps->ground_course);		// 8
 
-	DataFlash.WriteByte(END_BYTE);
+	Log_Write_Footer();
 }
 
 // Read a GPS packet
@@ -299,9 +297,7 @@ static void Log_Write_Raw()
 
 	Vector3f accel = imu.get_accel();
 
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_RAW_MSG);
+	Log_Write_Header(LOG_RAW_MSG);
 
 #if INERTIAL_NAV == ENABLED
 
@@ -325,7 +321,7 @@ static void Log_Write_Raw()
 	DataFlash.WriteLong(get_int(accel.y));
 	DataFlash.WriteLong(get_int(accel.z));
 
-	DataFlash.WriteByte(END_BYTE);
+	Log_Write_Footer();
 
 }
 
@@ -356,9 +352,7 @@ static void Log_Write_Current()
 	  return;
 	}
 
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_CURRENT_MSG);
+	Log_Write_Header(LOG_CURRENT_MSG);
 
 	DataFlash.WriteInt(g.rc_3.control_in);			// 1
 	DataFlash.WriteLong(throttle_integrator);		// 2
@@ -366,7 +360,7 @@ static void Log_Write_Current()
 	DataFlash.WriteInt(current_amps1 	* 100.0);	// 4
 	DataFlash.WriteInt(current_total1);				// 5
 
-	DataFlash.WriteByte(END_BYTE);
+	Log_Write_Header(END_BYTE);
 }
 
 // Read a Current packet
@@ -394,9 +388,7 @@ static void Log_Write_Motors()
 	  return;
 	}
 
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_MOTORS_MSG);
+	Log_Write_Header(LOG_MOTORS_MSG);
 
 	#if FRAME_CONFIG ==	TRI_FRAME
 	DataFlash.WriteInt(motors.motor_out[AP_MOTORS_MOT_1]);//1
@@ -447,7 +439,7 @@ static void Log_Write_Motors()
 	DataFlash.WriteInt(motors.motor_out[AP_MOTORS_MOT_4]);//4
 	#endif
 
-	DataFlash.WriteByte(END_BYTE);
+	Log_Write_Header(END_BYTE);
 }
 
 // Read a Motors packet.
@@ -526,9 +518,7 @@ static void Log_Write_Optflow()
 	}
 
 	#ifdef OPTFLOW_ENABLED
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_OPTFLOW_MSG);
+	Log_Write_Header(LOG_OPTFLOW_MSG);
 	DataFlash.WriteInt((int)optflow.dx);
 	DataFlash.WriteInt((int)optflow.dy);
 	DataFlash.WriteInt((int)optflow.surface_quality);
@@ -538,7 +528,7 @@ static void Log_Write_Optflow()
 	DataFlash.WriteLong(optflow.vlon);//optflow_offset.lng + optflow.lng);
 	DataFlash.WriteLong(of_roll);
 	DataFlash.WriteLong(of_pitch);
-	DataFlash.WriteByte(END_BYTE);
+	Log_Write_Footer();
 	#endif
 }
 
@@ -578,9 +568,7 @@ static void Log_Write_Nav_Tuning()
 
 	//Matrix3f tempmat = dcm.get_dcm_matrix();
 
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_NAV_TUNING_MSG);
+	Log_Write_Header(LOG_NAV_TUNING_MSG);
 
 	DataFlash.WriteInt(wp_distance);						// 1
 	DataFlash.WriteInt(target_bearing/100);					// 2
@@ -605,7 +593,7 @@ static void Log_Write_Nav_Tuning()
 	DataFlash.WriteInt(nav_lon);							// 10
 	*/
 
-	DataFlash.WriteByte(END_BYTE);
+	Log_Write_Footer();
 }
 
 // Read a Nav Tuning packet.
@@ -632,9 +620,7 @@ static void Log_Write_Control_Tuning()
 	  return;
 	}
 
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_CONTROL_TUNING_MSG);
+	Log_Write_Header(LOG_CONTROL_TUNING_MSG);
 
 	DataFlash.WriteInt(g.rc_3.control_in);				// 1
 	DataFlash.WriteInt(sonar_alt);						// 2
@@ -648,7 +634,7 @@ static void Log_Write_Control_Tuning()
 	DataFlash.WriteInt(g.pi_alt_hold.get_integrator());	// 10
 	DataFlash.WriteInt(g.pid_throttle.get_integrator());// 11
 
-	DataFlash.WriteByte(END_BYTE);
+	Log_Write_Footer();
 }
 
 // Read an control tuning packet
@@ -674,14 +660,12 @@ static void Log_Write_Performance()
 	  return;
 	}
 
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_PERFORMANCE_MSG);
+	Log_Write_Header(LOG_PERFORMANCE_MSG);
 	DataFlash.WriteByte(	imu.adc_constraints);				//1
 	DataFlash.WriteByte(	ahrs.renorm_range_count);			//2
 	DataFlash.WriteByte(	ahrs.renorm_blowup_count);			//3
 	DataFlash.WriteByte(	gps_fix_count);						//4
-	DataFlash.WriteByte(END_BYTE);
+	Log_Write_Footer();
 }
 
 // Read a performance packet
@@ -707,9 +691,7 @@ static void Log_Write_Cmd(byte num, struct Location *wp)
 	  return;
 	}
 
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_CMD_MSG);
+	Log_Write_Header(LOG_CMD_MSG);
 
 	DataFlash.WriteByte(g.command_total);	// 1
 	DataFlash.WriteByte(num);				// 2
@@ -720,7 +702,7 @@ static void Log_Write_Cmd(byte num, struct Location *wp)
 	DataFlash.WriteLong(wp->lat);			// 7
 	DataFlash.WriteLong(wp->lng);			// 8
 
-	DataFlash.WriteByte(END_BYTE);
+	Log_Write_Footer();
 }
 //CMD, 3, 0, 16, 8, 1, 800, 340440192, -1180692736
 
@@ -767,9 +749,7 @@ static void Log_Write_Attitude_Med() {
 // Write an attitude packet. Total length : 16 bytes
 static void Log_Write_Attitude()
 {
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_ATTITUDE_MSG);
+	Log_Write_Header(LOG_ATTITUDE_MSG);
 
 	DataFlash.WriteInt(g.rc_1.control_in);			// 1
 	DataFlash.WriteInt((int)ahrs.roll_sensor);		// 2
@@ -779,7 +759,7 @@ static void Log_Write_Attitude()
 	DataFlash.WriteInt((uint16_t)ahrs.yaw_sensor);	// 6
 	DataFlash.WriteInt(0);	// 7 (this used to be compass.heading)
 
-	DataFlash.WriteByte(END_BYTE);
+	Log_Write_Footer();
 }
 
 // Read an attitude packet
@@ -812,12 +792,10 @@ static void Log_Write_Mode(byte mode)
 	  return;
 	}
 
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_MODE_MSG);
+	Log_Write_Header(LOG_MODE_MSG);
 	DataFlash.WriteByte(mode);
 	DataFlash.WriteInt(g.throttle_cruise);
-	DataFlash.WriteByte(END_BYTE);
+	Log_Write_Footer();
 }
 
 // Read a mode packet
@@ -831,10 +809,8 @@ static void Log_Read_Mode()
 // Write Startup packet. Total length : 4 bytes
 static void Log_Write_Startup()
 {
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_STARTUP_MSG);
-	DataFlash.WriteByte(END_BYTE);
+	Log_Write_Header(LOG_STARTUP_MSG);
+	Log_Write_Footer();
 }
 
 // Read a startup packet
@@ -891,9 +867,7 @@ static void Log_Write_PID(int8_t pid_id, int32_t error, int32_t p, int32_t i, in
 	  return;
 	}
 
-	DataFlash.WriteByte(HEAD_BYTE1);
-	DataFlash.WriteByte(HEAD_BYTE2);
-	DataFlash.WriteByte(LOG_PID_MSG);
+	Log_Write_Header(LOG_PID_MSG);
 
 	DataFlash.WriteByte(pid_id);			// 1
 	DataFlash.WriteLong(error);				// 2
@@ -903,7 +877,7 @@ static void Log_Write_PID(int8_t pid_id, int32_t error, int32_t p, int32_t i, in
 	DataFlash.WriteLong(output);			// 6
 	DataFlash.WriteLong(gain * 1000);		// 7
 
-	DataFlash.WriteByte(END_BYTE);
+	Log_Write_Footer();
 }
 
 // Read a PID packet
