@@ -54,7 +54,7 @@
 	// RATE control
 	#define THROTTLE_P			0.4		//
 	#define THROTTLE_I			0.0		// Don't edit
-	#define THROTTLE_D			300		//
+	#define THROTTLE_D			0.0		//
 
 	#define LOITER_P			0.30
 	#define LOITER_I			0.0
