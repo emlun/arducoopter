@@ -1,8 +1,28 @@
+2012-07-05
+(Log written 2012-07-06)
+
+Tried flying some more. After flipping the coordinate axes so they
+agreed, the behaviour improved dramatically. No longer did it just
+take off in a random direction, but instead flew in outward spirals
+around the target location. Spent most of the day trying to figure out
+what was wrong. Disabling inertial navigation in the Z direction
+improved altitude hold, but not by much.
+
+Erik found an online ArduCopter simulator. When given the control
+settings set on board the quad, even the simulation diverged much in
+the same way as the real thing. Using the simulator we selected
+parameters that seemed good and went out to try again. It worked like
+a charm.
+
+Many plastic pieces were consumed by a few crashes today.
+
 2012-07-04
 (Log written 2012-07-06)
-We tried flying the quad in Maskinparken. It behaved very oddly. Later
-in the day we realised that navigation.pde and inertia.pde have
-different coordinate systems and set out to change this.
+
+We tried flying the quad in LOITER mode in Maskinparken. It behaved
+very oddly. Later in the day we realised that navigation.pde and
+inertia.pde have different coordinate systems and set out to change
+this.
 
 2012-07-03
 Started working with the Tmotes. Tried to compile and run a bunch of
