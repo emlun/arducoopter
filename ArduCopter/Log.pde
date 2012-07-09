@@ -375,7 +375,7 @@ static void Log_Write_INS() {
 static void Log_Read_INS() {
   float logvar;
   Serial.print("INS");
-  for (int y = 0; y < 18; y++) {
+  for (int y = 0; y < 15; y++) {
     Serial.print(", ");
     logvar = get_float(DataFlash.ReadLong());
     Serial.print(logvar);
