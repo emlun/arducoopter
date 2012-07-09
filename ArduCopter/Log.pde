@@ -346,9 +346,7 @@ static void Log_Read_Raw()
 }
 
 static void Log_Write_INS() {
-  DataFlash.WriteByte(HEAD_BYTE1);
-  DataFlash.WriteByte(HEAD_BYTE2);
-  DataFlash.WriteByte(LOG_INS_MSG);
+  Log_Write_Header(LOG_INS_MSG);
   
   DataFlash.WriteLong(get_int(accels_acceleration.x));
   DataFlash.WriteLong(get_int(accels_acceleration.y));
@@ -370,6 +368,8 @@ static void Log_Write_INS() {
   DataFlash.WriteLong(get_int(cartesian_gps.x));
   DataFlash.WriteLong(get_int(cartesian_gps.y));
   DataFlash.WriteLong(get_int(cartesian_gps.z));
+
+  Log_Write_Footer();
 }
 
 static void Log_Read_INS() {
