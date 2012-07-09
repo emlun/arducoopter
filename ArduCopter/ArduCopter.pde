@@ -1036,6 +1036,24 @@ static void fast_loop()
 	#if INERTIAL_NAV == ENABLED
 	calc_inertia();
 	#endif
+	
+	// calculate the copter's desired bearing and WP distance
+	// ------------------------------------------------------
+	if(nav_ok){
+		// clear nav flag
+		nav_ok = false;
+
+		// calculate distance, angles to target
+		navigate();
+
+		// update flight control system
+		update_navigation();
+
+		// update log
+		if (motors.armed()){
+			Log_Write_Nav_Tuning();
+		}
+	}
 
 	// custom code/exceptions for flight modes
 	// ---------------------------------------
@@ -1085,23 +1103,6 @@ static void medium_loop()
 		case 1:
 			medium_loopCounter++;
 
-			// calculate the copter's desired bearing and WP distance
-			// ------------------------------------------------------
-			if(nav_ok){
-				// clear nav flag
-				nav_ok = false;
-
-				// calculate distance, angles to target
-				navigate();
-
-				// update flight control system
-				update_navigation();
-
-				// update log
-				if (motors.armed()){
-					Log_Write_Nav_Tuning();
-				}
-			}
 			break;
 
 		// command processing
