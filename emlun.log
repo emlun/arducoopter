@@ -1,3 +1,15 @@
+2012-07-09
+Assembled and tested a new quadrotor since the recent crash. Flew a bit.
+One propeller shattered, probably due to vibrations caused by one of the
+propeller mount bolts being slightly bent. Otherwise worked okay.
+
+Erik got the TinyOS stuff working. He got a TinyOS installation from
+Axel and after that we could compile and install Tmote apps just fine.
+
+Wrote a simple Java program that attempts to send a packet of data to a
+tmote. Judging by the LEDs on the motes, the packet gets sent and is
+received, but the pololu doesn't seem to notice.
+
 2012-07-06
 Tried flying some more. Somehow the control parameters had been
 accidentally changed to some insane values, which we changed
