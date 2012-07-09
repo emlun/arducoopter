@@ -77,8 +77,8 @@ static void calibrate_accels()
 		calc_inertia();
 	}
 
-    // Integrate 100*a for 500*G_dt => a = int/(100*G_Dt*1)
-	accels_offset = -accels_velocity / (100 * G_Dt * 500);
+    // Integrate 100*a for 100*G_dt => a = int/(100*G_Dt*1)
+	accels_offset = -accels_velocity / (100 * G_Dt * 100);
 
 	zero_accels();
 
