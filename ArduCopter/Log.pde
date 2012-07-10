@@ -618,12 +618,6 @@ static void Log_Write_Nav_Tuning()
 	DataFlash.WriteInt(y_actual_speed);					    // 8
 	DataFlash.WriteInt(g.pid_nav_lon.get_integrator());	// 9
 	DataFlash.WriteInt(g.pid_nav_lat.get_integrator());	// 10
-	DataFlash.WriteInt(accels_velocity.x);					// 11
-	DataFlash.WriteInt(accels_velocity.y);					// 12
-	DataFlash.WriteInt(accels_velocity.z);					// 13
-	DataFlash.WriteInt(accels_position.x);					// 14
-	DataFlash.WriteInt(accels_position.y);					// 15
-	DataFlash.WriteInt(accels_position.z);					// 16
 
 	/*DataFlash.WriteInt(wp_distance);						// 1
 	DataFlash.WriteInt(nav_bearing/100);					// 2
@@ -647,7 +641,7 @@ static void Log_Read_Nav_Tuning()
 
 	Serial.printf_P(PSTR("NTUN, "));
 
-	for(int8_t i = 1; i < 16; i++ ){
+	for(int8_t i = 1; i < 10; i++ ){
 		temp = DataFlash.ReadInt();
 		Serial.printf("%d, ", temp);
 	}
