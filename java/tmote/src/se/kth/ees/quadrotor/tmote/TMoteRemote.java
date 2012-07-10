@@ -10,9 +10,11 @@ import javax.swing.JFrame;
 import javax.swing.JSlider;
 import javax.swing.border.TitledBorder;
 
-public class TMoteRemote extends JFrame implements Runnable, MouseListener {
+public final class TMoteRemote extends JFrame implements Runnable, MouseListener {
 
     public static final short DESTINATION_MOTE_ID = 13;
+    
+    private static TMoteRemote theInstance;
 
     private TMoteConnection con;
     private JSlider[] channelSliders;
@@ -20,8 +22,15 @@ public class TMoteRemote extends JFrame implements Runnable, MouseListener {
             false, false, false};
 
     byte[] payload = new byte[8];
+    
+    public static TMoteRemote getInstance() {
+        if(theInstance == null) {
+            theInstance = new TMoteRemote();
+        }
+        return theInstance;
+    }
 
-    public TMoteRemote() {
+    private TMoteRemote() {
 
         setTitle("Virtual 8ch Radio Controller");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -59,7 +68,7 @@ public class TMoteRemote extends JFrame implements Runnable, MouseListener {
     }
 
     public static void main(String[] args) {
-        new TMoteRemote();
+        TMoteRemote.getInstance();
     }
     
     private void sendPayload() {
