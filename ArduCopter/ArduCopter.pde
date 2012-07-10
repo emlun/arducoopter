@@ -1134,10 +1134,6 @@ static void medium_loop()
             if(motors.armed()){
                 Log_Write_Attitude_Med();
 
-                if(g.log_bitmask & MASK_LOG_INS) {
-                    Log_Write_INS();
-                }
-
                 Log_Write_Motors();
             }
 			break;
