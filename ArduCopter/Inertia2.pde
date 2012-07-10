@@ -9,10 +9,10 @@ Vector3f pos_error;
 
 static float KALMAN_L[] =  
 {
-   0.4,
-   0.3,
-   0.001,
-   0.001
+   0.15,
+   0.075,
+   0.0002,
+   0.0002
 }; // Found using a MATLAB script
 
 // Generates a new location and velocity in space based on inertia
