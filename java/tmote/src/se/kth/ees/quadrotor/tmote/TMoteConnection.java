@@ -55,7 +55,8 @@ public class TMoteConnection {
                         int r = i.read();
                         System.out.println("Received " + r);
                     } catch(SocketException e) {
-                        System.out.println("SerialForwarder died. EXITING.");
+                        System.err.println("SerialForwarder died.");
+                        e.printStackTrace();
                         return;
                     } catch(IOException e) {
                         e.printStackTrace();
@@ -97,6 +98,9 @@ public class TMoteConnection {
 
                 System.out.println("Sent " + tdp);
 
+            } catch(SocketException e) {
+                System.err.println("Socket died, EXITING.");
+                System.exit(1);
             } catch(IOException e) {
                 System.err.println("Failed to write payload " + tdp);
                 e.printStackTrace();
