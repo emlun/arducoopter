@@ -55,24 +55,23 @@ public class TMoteRemote extends JFrame implements Runnable {
     }
     
     private void sendPayload() {
-        for(int i = 0; i < 8; i++) {
-            payload[i] = (byte) (channelSliders[i].getValue());
+        if(con.isReady()) {
+            for(int i = 0; i < 8; i++) {
+                payload[i] = (byte) (channelSliders[i].getValue());
+            }
+            con.sendPayload(DESTINATION_MOTE_ID, payload);
         }
-        con.sendPayload(DESTINATION_MOTE_ID, payload);
     }
     
     @Override
     public void run() {
         while(true) {
-            if(con.isReady()) {
-                sendPayload();
-                
-                try {
-                    Thread.sleep(90);
-                } catch(InterruptedException e) {
-                    e.printStackTrace();
-                }
-                
+            sendPayload();
+
+            try {
+                Thread.sleep(98);
+            } catch(InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
