@@ -120,6 +120,32 @@ static inline void set_gps_origin() {
 }
 //////////////////////////////////////////////////
 
+
+//////////////////////////////////////////////////
+// EXTERNAL POSITIONING SYSTEM: UbiSense
+
+static const unsigned int TMOTE_MAX_PWM = 1956;
+static const unsigned int TMOTE_MIN_PWM = 1063;
+static const unsigned int TMOTE_PWM_RANGE = TMOTE_MAX_PWM - TMOTE_MIN_PWM;
+
+static const unsigned int UBISENSE_MIN_X = -5;
+static const unsigned int UBISENSE_MAX_X = 5;
+static const unsigned int UBISENSE_X_RANGE = UBISENSE_MAX_X - UBISENSE_MIN_X;
+
+static const unsigned int UBISENSE_MIN_Y = -5;
+static const unsigned int UBISENSE_MAX_Y = 5;
+static const unsigned int UBISENSE_Y_RANGE = UBISENSE_MAX_Y - UBISENSE_MIN_Y;
+
+static inline Vector3f get_ubisense_pos() {
+  return Vector3f(
+		  ((float)(g.rc_6.radio_in - TMOTE_MIN_PWM)) / (TMOTE_PWM_RANGE) * UBISENSE_X_RANGE + UBISENSE_MIN_X,
+		  ((float)(g.rc_7.radio_in - TMOTE_MIN_PWM)) / (TMOTE_PWM_RANGE) * UBISENSE_Y_RANGE + UBISENSE_MIN_Y,
+		  0
+		  );
+}
+
+//////////////////////////////////////////////////
+
 void zero_accels()
 {
   accels_rotated.zero();
