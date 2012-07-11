@@ -94,10 +94,9 @@ static void calibrate_accels()
  * positioning system such as GPS.
  **/
 static inline Vector3f get_external_position() {
-  return gps_to_cartesian();
+  return get_ubisense_pos();
 }
 static inline void set_external_position_origin() {
-  set_gps_origin();
 }
 
 //////////////////////////////////////////////////
