@@ -5,6 +5,8 @@
 #define DISARM_DELAY 20
 #define LEVEL_DELAY 100
 
+static const RC_Channel& arm_channel = g.rc_1;
+
 
 // called at 10hz
 static void arm_motors()
@@ -18,7 +20,7 @@ static void arm_motors()
 	}
 
 	// full right
-	if (g.rc_1.control_in > 4000) {
+	if (arm_channel.control_in > 4000) {
 		if (arming_counter == LEVEL_DELAY){
 			//Serial.printf("\nAL\n");
 			// begin auto leveling
@@ -37,7 +39,7 @@ static void arm_motors()
 		}
 
 	// full left
-	}else if (g.rc_1.control_in < -4000) {
+	}else if (arm_channel.control_in < -4000) {
 		if (arming_counter == LEVEL_DELAY){
 			//Serial.printf("\nLEV\n");
 
