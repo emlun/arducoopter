@@ -147,16 +147,16 @@ public final class TMoteRemote extends JFrame implements Runnable, MouseListener
                 modeStabilize();
             }
         }));
-        lowerButtonsPanel.add(new JButton(new AbstractAction("Loiter") {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                modeLoiter();
-            }
-        }));
         lowerButtonsPanel.add(new JButton(new AbstractAction("Land") {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 modeLand();
+            }
+        }));
+        lowerButtonsPanel.add(new JButton(new AbstractAction("Loiter") {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                modeLoiter();
             }
         }));
     }
@@ -204,11 +204,11 @@ public final class TMoteRemote extends JFrame implements Runnable, MouseListener
         modeSlider.setValue((SLIDER_MAX_VALUE + SLIDER_MIN_VALUE)/2);
     }
     
-    public void modeLoiter() {
+    public void modeLand() {
         modeSlider.setValue(SLIDER_MIN_VALUE);
     }
     
-    public void modeLand() {
+    public void modeLoiter() {
         modeSlider.setValue(SLIDER_MAX_VALUE);
     }
     
