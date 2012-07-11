@@ -1,3 +1,9 @@
+2012-07-10
+(Log written 2012-07-11)
+Managed to send data over TMotes from Java. Wrote a Java program that
+acts as a virtual radio controller. Performed some test flights with
+different parameters for the automatic controllers.
+
 2012-07-09
 Assembled and tested a new quadrotor since the recent crash. Flew a bit.
 One propeller shattered, probably due to vibrations caused by one of the
