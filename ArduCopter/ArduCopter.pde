@@ -1224,11 +1224,7 @@ static void fifty_hz_loop()
 	# if HIL_MODE == HIL_MODE_DISABLED
 		if(motors.armed()) {
 			Log_Write_Attitude_Fast();
-
-			if(g.log_bitmask & MASK_LOG_INS) {
-				Log_Write_INS();
-			}
-
+			Log_Write_INS();
 			Log_Write_Raw();
 		}
 	#endif

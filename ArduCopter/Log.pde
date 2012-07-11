@@ -346,6 +346,10 @@ static void Log_Read_Raw()
 }
 
 static void Log_Write_INS() {
+  if(!(g.log_bitmask & MASK_LOG_INS)) {
+    return;
+  }
+
   Log_Write_Header(LOG_INS_MSG);
   
   DataFlash.WriteLong(get_int(accels_acceleration.x));
