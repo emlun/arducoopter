@@ -1390,9 +1390,9 @@ static void update_GPS(void)
 	static byte ground_start_count	= 10;
 
 	// return immediately if GPS is not enabled
-	if( !GPS_enabled ) {
-		return;
-	}
+    //	if( !GPS_enabled ) {
+    //		return;
+    //	}
 
 	g_gps->update();
 	update_GPS_light();
@@ -1406,12 +1406,12 @@ static void update_GPS(void)
 		auto_pitch >>= 1;
 	}
 
-    if (g_gps->new_data && g_gps->fix) {
+    if (true || g_gps->new_data && g_gps->fix) {
 		// clear new data flag
 		g_gps->new_data = false;
 
     	// check for duiplicate GPS messages
-		if(last_gps_time != g_gps->time){
+		if(true || last_gps_time != g_gps->time){
 
 	    	// look for broken GPS
 			// ---------------
