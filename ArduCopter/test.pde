@@ -1357,6 +1357,10 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 					Serial.printf_P(PSTR("Offset [%+1.2f\t%+1.2f\t%+1.2f]"), accels_offset.x, accels_offset.y, accels_offset.z);
 					Serial.print("\t");
 					Serial.printf_P(PSTR("ExtPos [%+1.2f\t%+1.2f\t%+1.2f]"), ext_pos.x/100, ext_pos.y/100, ext_pos.z/100);
+					Serial.print("\t");
+
+					read_radio();
+					Serial.printf_P(PSTR("PWM[Ch6: %d\tCh7: %d]"), g.rc_6.radio_in, g.rc_7.radio_in);
 					Serial.println();
 				}
 			}
