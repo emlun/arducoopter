@@ -982,7 +982,7 @@ void loop()
 		
 		// calculate the copter's desired bearing and WP distance
 		// ------------------------------------------------------
-		if(nav_ok){
+		if(true || nav_ok){
 			// clear nav flag
 			nav_ok = false;
 

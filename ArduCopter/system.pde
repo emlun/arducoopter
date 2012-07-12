@@ -386,7 +386,7 @@ static void set_mode(byte mode)
 	if(home_is_set == false){
 		// THOR
 		// We don't care about Home if we don't have lock yet in Toy mode
-		if(mode == TOY || mode == OF_LOITER){
+		if(mode == TOY || mode == OF_LOITER || mode == LOITER){
 			// nothing
 		}else if (mode > ALT_HOLD){
 			mode = STABILIZE;
