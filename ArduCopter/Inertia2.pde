@@ -44,9 +44,7 @@ void calc_inertia()
 
 void inertial_error_correction() {
   
-  pos_error = get_external_position();
-  
-  pos_error -= accels_position;
+  pos_error = get_external_position() - accels_position;
   
   accels_position      += pos_error * KALMAN_L[0];
   accels_velocity      += pos_error * KALMAN_L[1];
