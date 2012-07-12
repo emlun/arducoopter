@@ -368,10 +368,10 @@ static void Log_Write_INS() {
   DataFlash.WriteLong(get_int(accels_offset.y));
   DataFlash.WriteLong(get_int(accels_offset.z));
 
-  Vector3f cartesian_gps = gps_to_cartesian();
-  DataFlash.WriteLong(get_int(cartesian_gps.x));
-  DataFlash.WriteLong(get_int(cartesian_gps.y));
-  DataFlash.WriteLong(get_int(cartesian_gps.z));
+  Vector3f ext_pos = get_external_position();
+  DataFlash.WriteLong(get_int(ext_pos.x));
+  DataFlash.WriteLong(get_int(ext_pos.y));
+  DataFlash.WriteLong(get_int(ext_pos.z));
 
   Log_Write_Footer();
 }
