@@ -123,17 +123,17 @@ static inline void set_gps_origin() {
 //////////////////////////////////////////////////
 // EXTERNAL POSITIONING SYSTEM: UbiSense
 
-static const unsigned int TMOTE_MAX_PWM = 1956;
-static const unsigned int TMOTE_MIN_PWM = 1063;
-static const unsigned int TMOTE_PWM_RANGE = TMOTE_MAX_PWM - TMOTE_MIN_PWM;
+static const int TMOTE_MAX_PWM = 1960;
+static const int TMOTE_MIN_PWM = 1060;
+static const int TMOTE_PWM_RANGE = TMOTE_MAX_PWM - TMOTE_MIN_PWM;
 
-static const unsigned int UBISENSE_MIN_X = -5;
-static const unsigned int UBISENSE_MAX_X = 5;
-static const unsigned int UBISENSE_X_RANGE = UBISENSE_MAX_X - UBISENSE_MIN_X;
+static const int UBISENSE_MIN_X = -500;
+static const int UBISENSE_MAX_X = 500;
+static const int UBISENSE_X_RANGE = UBISENSE_MAX_X - UBISENSE_MIN_X;
 
-static const unsigned int UBISENSE_MIN_Y = -5;
-static const unsigned int UBISENSE_MAX_Y = 5;
-static const unsigned int UBISENSE_Y_RANGE = UBISENSE_MAX_Y - UBISENSE_MIN_Y;
+static const int UBISENSE_MIN_Y = -500;
+static const int UBISENSE_MAX_Y = 500;
+static const int UBISENSE_Y_RANGE = UBISENSE_MAX_Y - UBISENSE_MIN_Y;
 
 static const RC_Channel& UBISENSE_X_CHANNEL = g.rc_6;
 static const RC_Channel& UBISENSE_Y_CHANNEL = g.rc_7;
