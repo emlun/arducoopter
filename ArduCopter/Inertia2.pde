@@ -135,10 +135,13 @@ static const unsigned int UBISENSE_MIN_Y = -5;
 static const unsigned int UBISENSE_MAX_Y = 5;
 static const unsigned int UBISENSE_Y_RANGE = UBISENSE_MAX_Y - UBISENSE_MIN_Y;
 
+static const RC_Channel& UBISENSE_X_CHANNEL = g.rc_6;
+static const RC_Channel& UBISENSE_Y_CHANNEL = g.rc_7;
+
 static inline Vector3f get_ubisense_pos() {
   return Vector3f(
-		  ((float)(g.rc_6.radio_in - TMOTE_MIN_PWM)) / (TMOTE_PWM_RANGE) * UBISENSE_X_RANGE + UBISENSE_MIN_X,
-		  ((float)(g.rc_7.radio_in - TMOTE_MIN_PWM)) / (TMOTE_PWM_RANGE) * UBISENSE_Y_RANGE + UBISENSE_MIN_Y,
+		  ((float)(UBISENSE_X_CHANNEL.radio_in - TMOTE_MIN_PWM)) / TMOTE_PWM_RANGE * UBISENSE_X_RANGE + UBISENSE_MIN_X - ubisense_origin_x,
+		  ((float)(UBISENSE_Y_CHANNEL.radio_in - TMOTE_MIN_PWM)) / TMOTE_PWM_RANGE * UBISENSE_Y_RANGE + UBISENSE_MIN_Y - ubisense_origin_y,
 		  0
 		  );
 }
