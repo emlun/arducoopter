@@ -10,9 +10,9 @@ Vector3f pos_error;
 static float KALMAN_L[] =  
 {
    0.15,
-   0.075,
-   0.0002,
-   0.0002
+   0.11,
+   0.00002,
+   0.00002
 }; // Found using a MATLAB script
 
 // Generates a new location and velocity in space based on inertia
@@ -97,7 +97,7 @@ static inline Vector3f get_external_position() {
   return get_ubisense_pos();
 }
 static inline void set_external_position_origin() {
-  set_ubisense_origin();
+  //set_ubisense_origin();
 }
 
 //////////////////////////////////////////////////
@@ -124,17 +124,17 @@ static inline void set_gps_origin() {
 //////////////////////////////////////////////////
 // EXTERNAL POSITIONING SYSTEM: UbiSense
 
-static const int TMOTE_MAX_PWM = 1960;
-static const int TMOTE_MIN_PWM = 1060;
-static const int TMOTE_PWM_RANGE = TMOTE_MAX_PWM - TMOTE_MIN_PWM;
+#define TMOTE_MAX_PWM 		1960.0
+#define TMOTE_MIN_PWM 		1060.0
+#define TMOTE_PWM_RANGE 	900.0
 
-static const int UBISENSE_MIN_X = -500;
-static const int UBISENSE_MAX_X = 500;
-static const int UBISENSE_X_RANGE = UBISENSE_MAX_X - UBISENSE_MIN_X;
+#define UBISENSE_MIN_X 		-500.0
+#define UBISENSE_MAX_X 		500.0
+#define UBISENSE_X_RANGE 	1000.0
 
-static const int UBISENSE_MIN_Y = -500;
-static const int UBISENSE_MAX_Y = 500;
-static const int UBISENSE_Y_RANGE = UBISENSE_MAX_Y - UBISENSE_MIN_Y;
+#define UBISENSE_MIN_Y 		-500.0
+#define UBISENSE_MAX_Y 		500.0
+#define UBISENSE_Y_RANGE 	1000.0
 
 static const RC_Channel& UBISENSE_X_CHANNEL = g.rc_6;
 static const RC_Channel& UBISENSE_Y_CHANNEL = g.rc_7;
@@ -144,9 +144,9 @@ float ubisense_origin_y = 0;
 
 static inline Vector3f get_ubisense_pos() {
   return Vector3f(
-		  ((float)(UBISENSE_X_CHANNEL.radio_in - TMOTE_MIN_PWM)) / TMOTE_PWM_RANGE * UBISENSE_X_RANGE + UBISENSE_MIN_X - ubisense_origin_x,
-		  ((float)(UBISENSE_Y_CHANNEL.radio_in - TMOTE_MIN_PWM)) / TMOTE_PWM_RANGE * UBISENSE_Y_RANGE + UBISENSE_MIN_Y - ubisense_origin_y,
-		  0
+		  ((float)UBISENSE_Y_CHANNEL.radio_in - TMOTE_MIN_PWM) / TMOTE_PWM_RANGE * UBISENSE_Y_RANGE + UBISENSE_MIN_Y - ubisense_origin_y,
+		  ((float)UBISENSE_X_CHANNEL.radio_in - TMOTE_MIN_PWM) / TMOTE_PWM_RANGE * UBISENSE_X_RANGE + UBISENSE_MIN_X - ubisense_origin_x,
+		  -0
 		  );
 }
 
