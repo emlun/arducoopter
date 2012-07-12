@@ -1406,12 +1406,12 @@ static void update_GPS(void)
 		auto_pitch >>= 1;
 	}
 
-    if (g_gps->new_data && g_gps->fix) {
+    if (true || g_gps->new_data && g_gps->fix) {
 		// clear new data flag
 		g_gps->new_data = false;
 
     	// check for duiplicate GPS messages
-		if(last_gps_time != g_gps->time){
+		if(true || last_gps_time != g_gps->time){
 
 	    	// look for broken GPS
 			// ---------------
