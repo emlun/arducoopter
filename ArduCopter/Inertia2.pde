@@ -62,7 +62,6 @@ static void calibrate_accels()
 		read_AHRS();
 	}
 	
-	g_gps->update();
 	set_external_position_origin();
 
     // sets accels_velocity to 0,0,0
@@ -112,6 +111,7 @@ static inline Vector3f gps_to_cartesian() {
   return Vector3f((float)(g_gps->latitude - gps_origin_latitude)*1.1, (float)(g_gps->longitude - gps_origin_longitude) * scaleLongDown * 1.1, -((float)g_gps->altitude - gps_origin_altitude));
 }
 static inline void set_gps_origin() {
+  g_gps->update();
   gps_origin_latitude = g_gps -> latitude;
   gps_origin_longitude = g_gps -> longitude;
   gps_origin_altitude = g_gps -> altitude;
