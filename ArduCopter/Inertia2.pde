@@ -136,24 +136,24 @@ static inline void set_gps_origin() {
 #define UBISENSE_MAX_Y 		500.0
 #define UBISENSE_Y_RANGE 	1000.0
 
+#define UBISENSE_MIN_Z 		0.0
+#define UBISENSE_MAX_Z 		1000.0
+#define UBISENSE_Z_RANGE 	1000.0
+
 static const RC_Channel& UBISENSE_X_CHANNEL = g.rc_6;
 static const RC_Channel& UBISENSE_Y_CHANNEL = g.rc_7;
-
-float ubisense_origin_x = 0;
-float ubisense_origin_y = 0;
+static const RC_Channel& UBISENSE_Z_CHANNEL = g.rc_8;
 
 static inline Vector3f get_ubisense_pos() {
   return Vector3f(
-		  ((float)UBISENSE_Y_CHANNEL.radio_in - TMOTE_MIN_PWM) / TMOTE_PWM_RANGE * UBISENSE_Y_RANGE + UBISENSE_MIN_Y - ubisense_origin_y,
-		  ((float)UBISENSE_X_CHANNEL.radio_in - TMOTE_MIN_PWM) / TMOTE_PWM_RANGE * UBISENSE_X_RANGE + UBISENSE_MIN_X - ubisense_origin_x,
-		  -0
+		  ((float)UBISENSE_Y_CHANNEL.radio_in - TMOTE_MIN_PWM) / TMOTE_PWM_RANGE * UBISENSE_Y_RANGE + UBISENSE_MIN_Y,
+		  ((float)UBISENSE_X_CHANNEL.radio_in - TMOTE_MIN_PWM) / TMOTE_PWM_RANGE * UBISENSE_X_RANGE + UBISENSE_MIN_X,
+		 -(((float)UBISENSE_Z_CHANNEL.radio_in - TMOTE_MIN_PWM) / TMOTE_PWM_RANGE * UBISENSE_Z_RANGE + UBISENSE_MIN_Z)
 		  );
 }
 
 static inline Vector3f set_ubisense_origin() {
-  Vector3f upos = get_ubisense_pos();
-  ubisense_origin_x += upos.x;
-  ubisense_origin_y += upos.y;
+	// Do nothing
 }
 
 //////////////////////////////////////////////////
