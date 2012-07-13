@@ -1183,55 +1183,15 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
   
 #if INERTIAL_NAV == ENABLED
 
-	int value = 0;		// Data from serial
-	byte format_log;	// Logging format, 0 == MATLAB
-	int rate = 0;		// Logging decimation factor
-	
 	// Let the user decide on logging format (ie MATLAB or human friendly).
 	// Also let the user choose the rate (every loop <-> every 20th loop)
-	Serial.println("Enter 1 to log in a human readable format...");
-	while(1){
 	
-		delay(250);
-		
-		if( Serial.available() ) {
-		
-			value = Serial.read();
-			
-			if(value == '1'){
-				format_log = 1;
-				Serial.println("Using human readable log...");
-			}
-			else{
-				format_log = 0;
-				Serial.println("Using MATLAB log...");
-			}
-			
-			clear_serial();
-			break;
-		}
-	}
+	// Logging format, 0 == MATLAB
+	byte format_log = ask_for_number("Enter 0 for MATLAB format, anything else for human-readable format:");
 	
-	Serial.println("Choose log decimation (max 20)...");
-	while(1){
+	// Logging decimation factor
+	int rate = ask_for_number("Choose log decimation (max 20)");
 	
-		delay(250);
-
-		if( Serial.available() ) {
-			value = Serial.read();
-			Serial.print((char)value);
-			value -= 48;		// ASCII 0 == 48
-			
-			if(value<=9&&value>=0) {
-				rate *= 10;
-				rate += value;
-			}
-			else{
-				break;
-			}
-		}
-	}
-
 	if(rate>20||rate<1) {
 		Serial.printf_P(PSTR("Received decimation factor %u\n"),rate);
 		rate = 20;
@@ -1414,6 +1374,40 @@ static void print_test_disabled()
 static inline void clear_serial() {
   while(Serial.available()) {
     Serial.read();
+  }
+}
+
+static int ask_for_number(char* message) {
+  Serial.println(message);
+  byte sign = 0;
+  int result = 0;
+  int input;
+
+  while(1){
+    if(Serial.available()) {
+      input = Serial.read();
+      Serial.print((char)input); // Show user the input
+
+      if(sign == 0) {
+	if(input == '-') {
+	  sign = -1;
+	  continue;
+	} else {
+	  sign = 1;
+	}
+      }
+	
+      input -= 48;		 // ASCII number 48 = character '0'
+      
+      if(input<=9 && input>=0) {
+	result *= 10;
+	result += input;
+      } else {
+	Serial.println();
+	return result * sign;
+      }
+    }
+    delay(250);
   }
 }
 
