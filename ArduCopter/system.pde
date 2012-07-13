@@ -473,8 +473,6 @@ static void set_mode(byte mode)
 			yaw_mode 		= LOITER_YAW;
 			roll_pitch_mode = LOITER_RP;
 			throttle_mode 	= LOITER_THR;
-			current_loc.lng = 0;
-			current_loc.lat = 0;
 			set_next_WP(&current_loc);
 			break;
 
