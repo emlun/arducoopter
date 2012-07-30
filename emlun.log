@@ -1,3 +1,15 @@
+2012-07-30
+Back from 2 week vacation.
+Tried to work out what's wrong when flying in R1. Wrote magnetic field
+logging and testing modes.
+Turns out we were using the wrong coordinate system all along. When we
+changed the rotation of the UbiSense position from 135 degrees to -135
+degrees, the copter suddenly behaved. It seems we were "keeping the
+coordinate system fixed and rotating the vector" instead of "keeping
+the vector fixed and rotating the coordinate system".
+Next goal will be to update next_WP with a target destination and get
+the quadrotor to follow.
+
 2012-07-13
 Worked on getting UbiSense positioning to work. Before lunch we were
 mostly frustrated and couldn't get anything to work. Somewhere around
