@@ -1306,17 +1306,13 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 			// GPS corrections and data printing occures at 5Hz
 			counter++;
 			if(counter == 20) {
+				counter = 0;
 				
 				// Refresh the GPS data
 				g_gps->update();
 			
 				// Correct INS errors
 				inertial_error_correction();
-				
-				// Large block to print states to serial
-				Vector3f ext_pos = get_external_position();
-
-				counter = 0;
 			}
 			
 			if(counter%rate == 0){
