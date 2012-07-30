@@ -1788,11 +1788,6 @@ void update_throttle_mode(void)
 
 				}
 
-				// hack to remove the influence of the ground effect
-				if(g.sonar_enabled && current_loc.alt < 100 && landing_boost != 0) {
-					nav_throttle = min(nav_throttle, 0);
-				}
-
 				#if FRAME_CONFIG == HELI_FRAME
 					throttle_out = heli_get_angle_boost(g.throttle_cruise + nav_throttle + get_z_damping() - landing_boost);
 				#else
