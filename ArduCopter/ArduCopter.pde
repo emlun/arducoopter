@@ -1515,6 +1515,11 @@ void update_yaw_mode(void)
 			//Serial.printf("nav_yaw %d ", nav_yaw);
 			nav_yaw  = wrap_360(nav_yaw);
 			break;
+
+	        case YAW_NORTH:
+		  nav_yaw = 0;
+		  break;
+
 	}
 
 	// Yaw control
