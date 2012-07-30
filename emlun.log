@@ -1,3 +1,19 @@
+2012-07-13
+Worked on getting UbiSense positioning to work. Before lunch we were
+mostly frustrated and couldn't get anything to work. Somewhere around
+12, Erik did something, or didn't, we don't quite know, and suddenly the
+copter hovered in place almost perfectly. We managed to repeat this
+twice or so, but when we tried to figure out what had changed it went
+back to not working. We suspect the magnetic field in R1 is messed up,
+which means the quadrotor gets confused and can't keep track of its
+heading.
+
+2012-07-12
+Failed to write log.
+
+2012-07-11
+Failed to write log.
+
 2012-07-10
 (Log written 2012-07-11)
 Managed to send data over TMotes from Java. Wrote a Java program that
