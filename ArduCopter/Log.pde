@@ -87,6 +87,7 @@ print_log_menu(void)
 		if (g.log_bitmask & MASK_LOG_OPTFLOW)		Serial.printf_P(PSTR(" OPTFLOW"));
 		if (g.log_bitmask & MASK_LOG_PID)			Serial.printf_P(PSTR(" PID"));
 		if (g.log_bitmask & MASK_LOG_INS)			Serial.printf_P(PSTR(" INS"));
+		if (g.log_bitmask & MASK_LOG_MAGFIELD)			Serial.printf_P(PSTR(" MAGFIELD"));
 	}
 
 	Serial.println();
@@ -387,6 +388,31 @@ static void Log_Read_INS() {
   Serial.println(" ");
 }
         
+static void Log_Write_Magfield() {
+  if(!(g.log_bitmask & MASK_LOG_MAGFIELD)) {
+    return;
+  }
+
+  Log_Write_Header(LOG_MAGFIELD_MSG);
+
+  DataFlash.WriteLong(get_int(compass.mag_x));
+  DataFlash.WriteLong(get_int(compass.mag_y));
+  DataFlash.WriteLong(get_int(compass.mag_z));
+
+  Log_Write_Footer();
+}
+
+static void Log_Read_Magfield() {
+  float logvar;
+  Serial.print("MAGFIELD");
+  for (int y = 0; y < 3; y++) {
+    Serial.print(", ");
+    logvar = get_float(DataFlash.ReadLong());
+    Serial.print(logvar);
+  }
+  Serial.println(" ");
+}
+
 // Write an Current data packet. Total length : 16 bytes
 static void Log_Write_Current()
 {
@@ -1059,6 +1085,10 @@ static int Log_Read_Process(int start_page, int end_page)
 
 				case LOG_INS_MSG:
 				  Log_Read_INS();
+				  break;
+
+				case LOG_MAGFIELD_MSG:
+				  Log_Read_Magfield();
 				  break;
 				}
 				break;

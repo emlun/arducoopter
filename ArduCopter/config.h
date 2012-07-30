@@ -883,6 +883,9 @@
 #ifndef LOG_INS
 # define LOG_INS				ENABLED
 #endif
+#ifndef LOG_MAGFIELD
+# define LOG_MAGFIELD                           ENABLED
+#endif
 
 
 // calculate the default log_bitmask
@@ -904,7 +907,8 @@
 			LOGBIT(MOTORS)			| \
 			LOGBIT(OPTFLOW)			| \
 			LOGBIT(PID)             | \
-			LOGBIT(INS)
+			LOGBIT(INS)             | \
+			LOGBIT(MAGFIELD)
 
 // if we are using fast, Disable Medium
 //#if LOG_ATTITUDE_FAST == ENABLED

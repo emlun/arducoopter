@@ -1225,6 +1225,7 @@ static void fifty_hz_loop()
 		if(motors.armed()) {
 			Log_Write_Attitude_Fast();
 			Log_Write_INS();
+			Log_Write_Magfield();
 			Log_Write_Raw();
 		}
 	#endif
