@@ -473,7 +473,12 @@ static void set_mode(byte mode)
 			yaw_mode 		= LOITER_YAW;
 			roll_pitch_mode = LOITER_RP;
 			throttle_mode 	= LOITER_THR;
-			set_next_WP(&current_loc);
+			
+			Location target_loc;
+			target_loc = current_loc;
+			target_loc.alt = max(target_loc.alt,30);
+			
+			set_next_WP(&target_loc);
 			break;
 
 		case POSITION:
