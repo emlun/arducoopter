@@ -1517,7 +1517,9 @@ void update_yaw_mode(void)
 			break;
 
 	        case YAW_NORTH:
-		  nav_yaw = 0;
+		  nav_yaw += constrain(wrap_180(-nav_yaw), -60, 60); // 40 deg a second
+		  //Serial.printf("nav_yaw %d ", nav_yaw);
+		  nav_yaw  = wrap_360(nav_yaw);
 		  break;
 
 	}
