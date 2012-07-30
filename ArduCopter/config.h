@@ -527,7 +527,7 @@
 
 // LOITER Mode
 #ifndef LOITER_YAW
-# define LOITER_YAW 		YAW_HOLD
+# define LOITER_YAW 		YAW_NORTH
 #endif
 
 #ifndef LOITER_RP
