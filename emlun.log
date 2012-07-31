@@ -1,3 +1,28 @@
+2012-07-31
+
+Worked with altitude control. Due to the behaviour of LOITER, we
+cannot take off in this mode. We would like to be able to, since that
+would make it possible to eliminate the mode selection channel and use
+6 6 of the 7 available channels for sending positioning data (3D
+position and 3D destination), and the last channel for controlling the
+throttle.
+
+We let the LabView program control the flight mode and made it go into
+LOITER when the copter has moved a set distance (about 30-50 cm) from
+the start position. We had some problems with the distance signal,
+derived from UbiSense, being too noisy, but it eventually just seemed
+to work. This solution seems promising, but is a bit unreliable since
+the distance signal is noisy.
+
+We also achieved a spectacular crash. We believed LOITER mode had been
+engaged and gave some increased throttle in order to slightly rise
+over an obstacle. At that instant, LOITER was engaged and took the
+high throttle setting as equillibrium hover throttle. As a result, the
+copter shot up into the ceiling, despite us cutting the throttle
+signal, was thrown off balance and lost a propeller or two, then
+plummeted some 9 metres to its death. The "bridge" and all circuitry
+was still intact afterwards, but all four copter arms were damaged.
+
 2012-07-30
 Back from 2 week vacation.
 Tried to work out what's wrong when flying in R1. Wrote magnetic field
