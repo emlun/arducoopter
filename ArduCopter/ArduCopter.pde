@@ -1704,7 +1704,7 @@ void update_throttle_mode(void)
 				}
 				// calc average throttle
 				if ((g.rc_3.control_in > g.throttle_min) && abs(climb_rate) < 60){
-					throttle_avg = throttle_avg * .99 + (float)g.rc_3.control_in * .01;
+					throttle_avg = throttle_avg * .67 + (float)g.rc_3.control_in * .33;
 					g.throttle_cruise = throttle_avg;
 				}
 				#endif
