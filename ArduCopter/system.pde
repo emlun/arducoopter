@@ -476,7 +476,7 @@ static void set_mode(byte mode)
 			
 			Location target_loc;
 			target_loc = current_loc;
-			target_loc.alt = max(target_loc.alt,50);
+			target_loc.alt = max(target_loc.alt, 100);
 			
 			set_next_WP(&target_loc);
 			break;
