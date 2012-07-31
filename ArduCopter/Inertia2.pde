@@ -1,6 +1,19 @@
 #if INERTIAL_NAV == ENABLED
 
 /**
+ * Inertial navigation system.
+ *
+ * Note that the accelerometers' x, y and z coordinate axes correspond
+ * to North, East and Down, respectively, when the copter is facing
+ * north. The ArduCopter navigation system uses the East, North, Up
+ * system.
+ *
+ * Inertial x = Navigation y
+ * Inertial y = Navigation x
+ * Inertial z = - Navigation z
+ */
+
+/**
  * pos_error is the difference x_{real} - x_{est} where x_{real} is
  * the position received from an external positioning system and
  * x_{est} is the position estimated by inertial navigation.
@@ -23,14 +36,9 @@ void calc_inertia()
 	// --------------------------
 	accels_rotated		= ahrs.get_dcm_matrix() * imu.get_accel();
 
-	// rising 		= 2
-	// neutral 		= 0
-	// falling 		= -2
-
-
 	// ACC X POS = going North
 	// ACC Y POS = going EAST
-	// ACC Z POS = going DOWN (lets flip this)
+	// ACC Z POS = going DOWN
 
         // Temporary storage for the offset-corrected value of the moast recent
         // value from the accelerometers
