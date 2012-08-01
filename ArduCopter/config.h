@@ -535,7 +535,7 @@
 #endif
 
 #ifndef LOITER_THR
-# define LOITER_THR			THROTTLE_HOLD
+# define LOITER_THR			THROTTLE_AUTO
 #endif
 
 

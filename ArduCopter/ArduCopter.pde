@@ -1787,6 +1787,16 @@ void update_throttle_mode(void)
 					//*/
 
 				}
+				
+				// If the copter seems to be on the ground, push off by increasing throttle_cruise.
+				if(sonar_alt < 30  && climb_rate < 10 && control_mode != LAND) {
+				
+					if(g.throttle_cruise<300) {
+						g.throttle_cruise = 300;
+					}else {
+						g.throttle_cruise += 1;
+					}
+				}
 
 				#if FRAME_CONFIG == HELI_FRAME
 					throttle_out = heli_get_angle_boost(g.throttle_cruise + nav_throttle + get_z_damping() - landing_boost);
