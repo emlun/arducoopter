@@ -5,7 +5,7 @@
 #define DISARM_DELAY 20
 #define LEVEL_DELAY 100
 
-static const RC_Channel& arm_channel = g.rc_1;
+static const RC_Channel& arm_channel = g.rc_4;
 
 
 // called at 10hz
