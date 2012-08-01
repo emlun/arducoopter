@@ -837,13 +837,13 @@
 
 
 #ifndef LOG_ATTITUDE_FAST
-# define LOG_ATTITUDE_FAST		ENABLED
+# define LOG_ATTITUDE_FAST		DISABLED
 #endif
 #ifndef LOG_ATTITUDE_MED
-# define LOG_ATTITUDE_MED 		DISABLED
+# define LOG_ATTITUDE_MED 		ENABLED
 #endif
 #ifndef LOG_GPS
-# define LOG_GPS 				ENABLED
+# define LOG_GPS 				DISABLED
 #endif
 #ifndef LOG_PM
 # define LOG_PM 				ENABLED
@@ -869,7 +869,7 @@
 #endif
 // quad motor PWMs
 #ifndef LOG_MOTORS
-# define LOG_MOTORS				ENABLED
+# define LOG_MOTORS				DISABLED
 #endif
 // optical flow
 #ifndef LOG_OPTFLOW
@@ -884,7 +884,7 @@
 # define LOG_INS				ENABLED
 #endif
 #ifndef LOG_MAGFIELD
-# define LOG_MAGFIELD                           ENABLED
+# define LOG_MAGFIELD                           DISABLED
 #endif
 
 
