@@ -1,3 +1,15 @@
+2012-08-01
+
+Assembled a new copter after yesterday's crash, took almost until
+lunch to finish.
+
+Worked on making the copter take off safely. We tried controlling
+takeoff via LabView, but it was too unreliable. Instead, we modified
+LOITER mode so that the user has no control of the waypoint height
+(changed LOITER_THR from THROTTLE_HOLD to THROTTLE_AUTO) and made
+THROTTLE_AUTO successively raise g.throttle_cruise if the sonar
+reports a height less than 30 cm. This solution worked really well.
+
 2012-07-31
 
 Worked with altitude control. Due to the behaviour of LOITER, we
