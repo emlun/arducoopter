@@ -1868,31 +1868,7 @@ static void update_navigation()
 			// switch passthrough to LOITER
 		case LOITER:
 		case POSITION:
-			// This feature allows us to reposition the quad when the user lets
-			// go of the sticks
-
-			// if((abs(g.rc_2.control_in) + abs(g.rc_1.control_in)) > 500){
-				// if(wp_distance > 500)
-					// loiter_override 	= true;
-			// }
-			loiter_override 	= false;
-
-			// Allow the user to take control temporarily,
-			if(loiter_override){
-				// this sets the copter to not try and nav while we control it
-				wp_control 	= NO_NAV_MODE;
-
-				// reset LOITER to current position
-				next_WP.lat = current_loc.lat;
-				next_WP.lng = current_loc.lng;
-
-				if(g.rc_2.control_in == 0 && g.rc_1.control_in == 0){
-					loiter_override 	= false;
-					wp_control 			= LOITER_MODE;
-				}
-			}else{
-				wp_control = LOITER_MODE;
-			}
+			wp_control = LOITER_MODE;
 
 			if(loiter_timer != 0){
 				// If we have a safe approach alt set and we have been loitering for 20 seconds(default), begin approach
