@@ -41,8 +41,8 @@ static void calc_XY_velocity(){
 		last_latitude = g_gps->latitude;
 	}
 
-	// this speed is ~ in cm because we are using 10^7 numbers from GPS
-	float tmp = 1.0/dTnav;
+	// dTnav is for 50 Hz, this loops runs at 10 Hz
+	float tmp = 1.0/dTnav/5;
 
 	x_actual_speed 	= (float)(g_gps->longitude - last_longitude)  * scaleLongDown * tmp;
 	y_actual_speed	= (float)(g_gps->latitude  - last_latitude)  * tmp;

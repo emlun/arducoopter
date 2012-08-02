@@ -985,6 +985,11 @@ void loop()
 		if(true || nav_ok){
 			// clear nav flag
 			nav_ok = false;
+			
+			// used to calculate iterms
+			// ------------------------------------------
+			dTnav 				= (float)(millis() - nav_loopTimer)/ 1000.0;
+			nav_loopTimer 		= millis();
 
 			// calculate distance, angles to target
 			navigate();
@@ -1428,10 +1433,6 @@ static void update_GPS(void)
 			// --------------------------
 			gps_fix_count++;
 
-			// used to calculate speed in X and Y, iterms
-			// ------------------------------------------
-			dTnav 				= (float)(millis() - nav_loopTimer)/ 1000.0;
-			nav_loopTimer 		= millis();
 
 			// prevent runup from bad GPS
 			// --------------------------
