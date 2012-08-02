@@ -19,13 +19,19 @@
  * x_{est} is the position estimated by inertial navigation.
  **/
 Vector3f pos_error;
+Vector3f vel_error;
 
 static float KALMAN_L[] =  
 {
-   0.089,
-   0.038,
-   0.00003,
-   0.00003
+   0.099,
+   0.047,
+   0.00006,
+   0.00006,
+   
+   0.00023,
+   0.00021,
+   0,
+   0
 }; // Found using a MATLAB script
 
 // Generates a new location and velocity in space based on inertia
@@ -53,11 +59,17 @@ void calc_inertia()
 void inertial_error_correction() {
   
   pos_error = get_external_position() - accels_position;
+  vel_error = get_external_velocity() - accels_velocity;
   
   accels_position      += pos_error * KALMAN_L[0];
   accels_velocity      += pos_error * KALMAN_L[1];
   accels_acceleration  += pos_error * KALMAN_L[2];
   accels_offset        += pos_error * KALMAN_L[3];
+  
+  accels_position      += vel_error * KALMAN_L[4];
+  accels_velocity      += vel_error * KALMAN_L[5];
+  accels_acceleration  += vel_error * KALMAN_L[6];
+  accels_offset        += vel_error * KALMAN_L[7];
 }
 
 static void calibrate_accels()
@@ -103,6 +115,10 @@ static inline Vector3f get_external_position() {
 }
 static inline void set_external_position_origin() {
   //set_ubisense_origin();
+}
+
+static inline Vector3f get_external_velocity() {
+  return Vector3f(x_actual_speed,y_actual_speed,0);
 }
 
 //////////////////////////////////////////////////
