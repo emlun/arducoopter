@@ -1,3 +1,22 @@
+2012-08-02
+
+Moved the LabView program to the assigned computer. Had to downgrade
+the version of the program and fix a few things that turned out to be
+incompatible across versions.
+
+Worked on perfecting computer-only control. Height control acted up a
+bit until we realised the sonar was not connected. We also had some
+problems with the LAND mode, which did not seem to trigger for some
+reason, being a bit too violent when landing. Anyway, we have now set
+the copter up to be controlled via LabView only, without radio.
+
+We made a bug in the code where we set the target location when
+entering LOITER. We changed it to be the origin, but an oversight made
+the altitude of the new target probably be assigned randomly. As a
+result, the copter shot up in the ceiling and got stuck on the
+"HVILAN" crane. Only a propeller and perhaps the treads in a screw
+hole on one of the motors was destroyed, though.
+
 2012-08-01
 
 Assembled a new copter after yesterday's crash, took almost until
