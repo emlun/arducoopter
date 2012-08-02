@@ -1102,6 +1102,8 @@ static void medium_loop()
 		//------------------------------------------------
 		case 1:
 			medium_loopCounter++;
+			
+			calc_XY_velocity();
 
 			break;
 
@@ -1456,13 +1458,6 @@ static void update_GPS(void)
 					ground_start_count = 0;
 				}
 			}
-
-			// the saving of location moved into calc_XY_velocity
-
-			//current_loc.lng = g_gps->longitude;	// Lon * 10 * *7
-			//current_loc.lat = g_gps->latitude;	// Lat * 10 * *7
-
-			calc_XY_velocity();
 
 			if(motors.armed()){
 				Log_Write_GPS();
