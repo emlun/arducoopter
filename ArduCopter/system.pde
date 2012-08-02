@@ -475,7 +475,8 @@ static void set_mode(byte mode)
 			throttle_mode 	= LOITER_THR;
 			
 			Location target_loc;
-			target_loc = current_loc;
+			target_loc.lng = 0;
+			target_loc.lat = 0;
 			target_loc.alt = max(target_loc.alt, 100);
 			
 			set_next_WP(&target_loc);
