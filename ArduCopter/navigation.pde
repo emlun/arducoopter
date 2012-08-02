@@ -26,36 +26,27 @@ static bool check_missed_wp()
 
 // ------------------------------
 static void calc_XY_velocity(){
-	static int32_t last_longitude = 0;
-	static int32_t last_latitude  = 0;
-
-	// called after GPS read
-	// offset calculation of GPS speed:
-	// used for estimations below 1.5m/s
-	// y_GPS_speed positve = Up
-	// x_GPS_speed positve = Right
+	static float last_x  = 1e9;
+	static float last_y  = 1e9;
+	Vector3f current_pos;
 
 	// initialise last_longitude and last_latitude
-	if( last_longitude == 0 && last_latitude == 0 ) {
-		last_longitude = g_gps->longitude;
-		last_latitude = g_gps->latitude;
+	if( last_x == 1e9 && last_y == 1e9 ) {
+		current_pos = get_external_position();
+	
+		last_x = current_pos.x;
+		last_y = current_pos.y;
 	}
 
 	// dTnav is for 50 Hz, this loops runs at 10 Hz
 	float tmp = 1.0/dTnav/5;
 
-	x_actual_speed 	= (float)(g_gps->longitude - last_longitude)  * scaleLongDown * tmp;
-	y_actual_speed	= (float)(g_gps->latitude  - last_latitude)  * tmp;
+	current_pos = get_external_position();
+	x_actual_speed 	= (float)(current_pos.x - last_x) * tmp;
+	y_actual_speed	= (float)(current_pos.y - last_y) * tmp;
 
-	last_longitude 	= g_gps->longitude;
-	last_latitude 	= g_gps->latitude;
-
-	/*if(g_gps->ground_speed > 150){
-		float temp = radians((float)g_gps->ground_course/100.0);
-		x_actual_speed = (float)g_gps->ground_speed * sin(temp);
-		y_actual_speed = (float)g_gps->ground_speed * cos(temp);
-	}*/
-
+	last_x = current_pos.x;
+	last_y = current_pos.y;
 
 	#if INERTIAL_NAV == ENABLED
 	  // inertial_nav
