@@ -549,7 +549,7 @@
 #endif
 
 #ifndef RTL_THR
-# define RTL_THR			THROTTLE_AUTO
+# define RTL_THR			THROTTLE_HOLD
 #endif
 
 #ifndef SUPER_SIMPLE
