@@ -158,8 +158,8 @@ static inline void set_gps_origin() {
 #define UBISENSE_MAX_Y 		500.0
 #define UBISENSE_Y_RANGE 	1000.0
 
-#define UBISENSE_MIN_Z 		0.0
-#define UBISENSE_MAX_Z 		1000.0
+#define UBISENSE_MIN_Z 		-400.0
+#define UBISENSE_MAX_Z 		600.0
 #define UBISENSE_Z_RANGE 	1000.0
 
 static const RC_Channel& UBISENSE_X_CHANNEL = g.rc_6;
@@ -172,6 +172,30 @@ static inline Vector3f get_ubisense_pos() {
 		  ((float)UBISENSE_X_CHANNEL.radio_in - TMOTE_MIN_PWM) / TMOTE_PWM_RANGE * UBISENSE_X_RANGE + UBISENSE_MIN_X,
 		 -(((float)UBISENSE_Z_CHANNEL.radio_in - TMOTE_MIN_PWM) / TMOTE_PWM_RANGE * UBISENSE_Z_RANGE + UBISENSE_MIN_Z)
 		  );
+}
+
+static const RC_Channel& TARGET_X_CHANNEL = g.rc_1;
+static const RC_Channel& TARGET_Y_CHANNEL = g.rc_2;
+static const RC_Channel& TARGET_Z_CHANNEL = g.rc_4;
+
+static inline Vector3f get_target_pos() {
+  return Vector3f(
+		  ((float)TARGET_Y_CHANNEL.radio_in - TMOTE_MIN_PWM) / TMOTE_PWM_RANGE * UBISENSE_Y_RANGE + UBISENSE_MIN_Y,
+		  ((float)TARGET_X_CHANNEL.radio_in - TMOTE_MIN_PWM) / TMOTE_PWM_RANGE * UBISENSE_X_RANGE + UBISENSE_MIN_X,
+		 -(((float)TARGET_Z_CHANNEL.radio_in - TMOTE_MIN_PWM) / TMOTE_PWM_RANGE * UBISENSE_Z_RANGE + UBISENSE_MIN_Z)
+		  );
+}
+
+static struct Location get_next_WP() {
+	struct Location new_WP;
+	Vector3f target_coord;
+	target_coord = get_new_pos();
+	
+	new_WP.lng = target_coord.y;
+	new_WP.lat = target_coord.x;
+	new_WP.alt = -target_coord.z;
+
+	return new_WP;
 }
 
 static inline Vector3f set_ubisense_origin() {

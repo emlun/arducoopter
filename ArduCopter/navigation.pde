@@ -49,11 +49,15 @@ static void calc_XY_velocity(){
 	last_y = current_pos.y;
 
 	#if INERTIAL_NAV == ENABLED
-	  // inertial_nav
-	  inertial_error_correction();
+		if(control_mode == LOITER) {
+			set_next_WP(&get_next_WP());
+		}
+		
+		// inertial_nav
+		inertial_error_correction();
 	  
-	  current_loc.lng = accels_position.y / 1.1 / scaleLongDown;
-	  current_loc.lat = accels_position.x / 1.1;
+		current_loc.lng = accels_position.y;
+		current_loc.lat = accels_position.x;
 	  
 	#else
 		current_loc.lng = xLeadFilter.get_position(g_gps->longitude, x_actual_speed);
@@ -73,7 +77,7 @@ static void calc_location_error(struct Location *next_loc)
 	*/
 
 	// X Error
-	long_error	= (float)(next_loc->lng - current_loc.lng) * scaleLongDown;   // 500 - 0 = 500 Go East
+	long_error	= (float)(next_loc->lng - current_loc.lng);   // 500 - 0 = 500 Go East
 
 	// Y Error
 	lat_error	= next_loc->lat - current_loc.lat;							// 500 - 0 = 500 Go North
