@@ -1,9 +1,9 @@
 /// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
 // 10 = 1 second
-#define ARM_DELAY 20
-#define DISARM_DELAY 20
-#define LEVEL_DELAY 100
+#define ARM_DELAY 10
+#define DISARM_DELAY 10
+#define LEVEL_DELAY 30
 
 static const RC_Channel& arm_channel = g.rc_4;
 
