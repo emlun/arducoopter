@@ -853,7 +853,7 @@ static uint32_t condition_start;
 ////////////////////////////////////////////////////////////////////////////////
 // Integration time for the gyros (DCM algorithm)
 // Updated with the fast loop
-static float G_Dt		= 0.02;
+static float G_Dt		= 0.01;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Inertial Navigation
@@ -954,7 +954,8 @@ void loop()
 		//Log_Write_Data(13, (int32_t)(timer - fast_loopTimer));
 
 		//PORTK |= B00010000;
-		G_Dt 				= (float)(timer - fast_loopTimer) / 1000000.f;		// used by PI Loops
+		G_Dt			   *= 0.95;
+		G_Dt 			   += 0.05*(float)(timer - fast_loopTimer) / 1000000.f;		// used by PI Loops
 		fast_loopTimer 		= timer;
 
 		// Execute the fast loop
@@ -982,25 +983,23 @@ void loop()
 		
 		// calculate the copter's desired bearing and WP distance
 		// ------------------------------------------------------
-		if(true || nav_ok){
-			// clear nav flag
-			nav_ok = false;
-			
-			// used to calculate iterms
-			// ------------------------------------------
-			dTnav 				= (float)(millis() - nav_loopTimer)/ 1000.0;
-			nav_loopTimer 		= millis();
+		// clear nav flag
+		nav_ok = false;
+		
+		// used to calculate iterms
+		// ------------------------------------------
+		dTnav 				= (float)(millis() - nav_loopTimer)/ 1000.0;
+		nav_loopTimer 		= millis();
 
-			// calculate distance, angles to target
-			navigate();
+		// calculate distance, angles to target
+		navigate();
 
-			// update flight control system
-			update_navigation();
+		// update flight control system
+		update_navigation();
 
-			// update log
-			if (motors.armed()){
-				Log_Write_Nav_Tuning();
-			}
+		// update log
+		if (motors.armed()){
+			Log_Write_Nav_Tuning();
 		}
 
 		// Rotate the Nav_lon and nav_lat vectors based on Yaw
