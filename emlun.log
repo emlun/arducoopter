@@ -1,3 +1,16 @@
+2012-08-03
+
+Repaired the copter and test flew it. Tweaked flight regulator
+settings. Started testing with sending a destination position to the
+copter. In the first test flight the copter thought it was some 10-11
+km off target and crashed immediately. It seems the destination data
+is not received correctly.
+
+Most of the afternoon was spent trying to work out what's wrong with
+the destination data. It is confirmed to arrive on the copter
+correctly, but somewhere along the way some assignment goes wrong and
+the axes are all screwed up. We haven't found the cause yet.
+
 2012-08-02
 
 Moved the LabView program to the assigned computer. Had to downgrade
