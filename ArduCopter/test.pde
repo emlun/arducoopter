@@ -36,6 +36,7 @@ static int8_t	test_eedump(uint8_t argc, 		const Menu::arg *argv);
 static int8_t	test_rawgps(uint8_t argc, 		const Menu::arg *argv);
 //static int8_t	test_mission(uint8_t argc, 		const Menu::arg *argv);
 static int8_t   test_vel(uint8_t argc,                  const Menu::arg *argv);
+static int8_t   test_destination(uint8_t argc,          const Menu::arg *argv);
 static int8_t   test_led(uint8_t argc,                  const Menu::arg *argv);
 
 // this is declared here to remove compiler errors
@@ -92,6 +93,7 @@ const struct Menu::command test_menu_commands[] PROGMEM = {
 	//{"reverse",		test_reverse},
 	//{"wp",			test_wp_nav},
 	{"vel",                 test_vel},
+	{"dest",         test_destination},
 	{"led",                 test_led},
 };
 
@@ -1325,12 +1327,54 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 		if(Serial.available() > 0){
 		  return (0);
 		}
-		
+
 	}
-	
+
 	#else
 	  Serial.println("Inertial navigation is disabled. Exiting.");
 	#endif
+}
+
+static int8_t test_destination(uint8_t argc, const Menu::arg *argv) {
+
+  uint32_t timer;
+  Vector3f target_pos;
+  struct Location nwp;
+
+  clear_serial();
+
+  print_hit_enter();
+
+  while(1) {
+
+    timer = micros();
+
+    // 10 Hz loop
+    if ((timer - fast_loopTimer) >= 100000) {
+      fast_loopTimer = timer;
+      read_radio();
+
+      target_pos = get_target_pos();
+      nwp = get_next_WP();
+
+      set_next_WP(&nwp);
+
+      Serial.print(millis());
+      Serial.print("\t");
+      Serial.printf_P(PSTR("target_pos: [%1.2f\t%1.2f\t%1.2f]"), target_pos.x, target_pos.y, target_pos.z);
+      Serial.print("\t");
+      Serial.printf_P(PSTR("nwp: [%1.1f,\t%1.1f,\t%1.1f]"), (float)nwp.lng, (float)nwp.lat, (float)nwp.alt);
+      Serial.print("\t");
+      Serial.printf_P(PSTR("next_WP: [%1.1f,\t%1.1f,\t%1.1f]"), (float)next_WP.lng, (float)next_WP.lat, (float)next_WP.alt);
+      Serial.println();
+    }
+
+    if(Serial.available() > 0){
+      return (0);
+    }
+
+  }
+
 }
 
 static int8_t test_led(uint8_t argc, const Menu::arg *argv) {
