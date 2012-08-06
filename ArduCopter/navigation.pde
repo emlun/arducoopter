@@ -50,7 +50,9 @@ static void calc_XY_velocity(){
 
 	#if INERTIAL_NAV == ENABLED
 		if(control_mode == LOITER) {
-			set_next_WP(&get_next_WP());
+			Location nwp = get_next_WP();
+			set_next_WP(&nwp);
+			force_new_altitude(max(nwp.alt, 100));
 		}
 		
 		// inertial_nav
