@@ -189,7 +189,7 @@ static inline Vector3f get_target_pos() {
 static struct Location get_next_WP() {
 	struct Location new_WP;
 	Vector3f target_coord;
-	target_coord = get_new_pos();
+	target_coord = get_target_pos();
 	
 	new_WP.lng = target_coord.y;
 	new_WP.lat = target_coord.x;
