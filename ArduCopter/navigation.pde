@@ -72,11 +72,19 @@ static void calc_location_error(struct Location *next_loc)
 	10000 	= 111m
 	*/
 
+	#if INERTIAL_NAV == ENABLED
+	// X Error
+	long_error	= (float)(next_loc->lng - accels_position.y);   // Accels is NED, Longitude is E
+
+	// Y Error
+	lat_error	= next_loc->lat - accels_position.x;			// Accels is NED, Latitude is N
+	#else
 	// X Error
 	long_error	= (float)(next_loc->lng - current_loc.lng) * scaleLongDown;   // 500 - 0 = 500 Go East
 
 	// Y Error
 	lat_error	= next_loc->lat - current_loc.lat;							// 500 - 0 = 500 Go North
+	#endif
 }
 
 #define NAV_ERR_MAX 600
