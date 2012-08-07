@@ -1,3 +1,24 @@
+2012-08-07
+
+Improved the LabView control interface.
+
+Made the computer capable of sending a continuously changing
+destination in the shape of a figure-eight. Even at 20 mHz in the X
+direction and 40 mHz in the Y direction, with amplitudes 3 m (X) and 2
+m (Y) the quadrotor had trouble keeping up and was often two or three
+meters behind.
+
+Expanded the flying area a bit - since we send analog position signals
+to the quadrotor, the positions we can express are confined to
+pre-defined intervals. We expanded these and tried flying over the
+reactor pit. It went quite well, the quadrotor seemed a bit confused
+and wobbled a bit up and down but didn't drop quickly as one might
+have expected.
+
+Started working a little bit on a second quadrotor.
+
+Erik started working on the report.
+
 2012-08-06
 (Log written 2012-08-07)
 
