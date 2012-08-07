@@ -438,7 +438,7 @@ static void set_mode(byte mode)
 			break;
 
 		case STABILIZE:
-			yaw_mode 		= YAW_HOLD;
+			yaw_mode 		= YAW_NORTH;
 			roll_pitch_mode = ROLL_PITCH_STABLE;
 			throttle_mode 	= THROTTLE_MANUAL;
 			break;
