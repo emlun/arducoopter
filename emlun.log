@@ -1,3 +1,20 @@
+2012-08-06
+(Log written 2012-08-07)
+
+Spent the first half of the day debugging a few statements of the form
+"Location l; l.lat=1; l.lng=2; l.alt=3" where lat was set to 1, lng
+not at all, and alt to 3. The problem turned out to be our print
+statement. We used a printf-style print function and used the %d
+specifier to print int32_t type values. It turns out that Arduino's
+word length is 16 bit, meaning the first %d read the low bits of the
+first argument, the second read the high bits (which were all zero),
+the third read the low bits of the second argument, and the third
+argument was not printed at all.
+
+With that settled, we tried again with sending a destination and
+having the copter fly there. This time it worked, so we worked a bit
+more with the LabView interface.
+
 2012-08-03
 
 Repaired the copter and test flew it. Tweaked flight regulator
