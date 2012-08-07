@@ -154,8 +154,8 @@ static inline void set_gps_origin() {
 #define UBISENSE_MAX_Y 		500.0
 #define UBISENSE_Y_RANGE 	1000.0
 
-#define UBISENSE_MIN_Z 		-400.0
-#define UBISENSE_MAX_Z 		600.0
+#define UBISENSE_MIN_Z 		0.0
+#define UBISENSE_MAX_Z 		1000.0
 #define UBISENSE_Z_RANGE 	1000.0
 
 static const RC_Channel& UBISENSE_X_CHANNEL = g.rc_6;
