@@ -352,8 +352,8 @@ static const char* flight_mode_strings[] = {
 ////////////////////////////////////////////////////////////////////////////////
 // The GPS based velocity calculated by offsetting the Latitude and Longitude
 // updated after GPS read - 5-10hz
-static int16_t x_actual_speed;
-static int16_t y_actual_speed;
+static Vector3f current_ext_pos;
+static Vector3f current_ext_speed;
 
 
 // The difference between the desired rate of travel and the actual rate of travel

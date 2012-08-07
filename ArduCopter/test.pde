@@ -1274,7 +1274,7 @@ static int8_t test_vel(uint8_t argc, const Menu::arg *argv) {
 				g_gps->update();
 			
 				// Correct INS errors
-				inertial_error_correction();
+				calc_XY_velocity();
 			}
 			
 			if(counter%rate == 0){

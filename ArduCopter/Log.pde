@@ -369,10 +369,15 @@ static void Log_Write_INS() {
   DataFlash.WriteLong(get_int(accels_offset.y));
   DataFlash.WriteLong(get_int(accels_offset.z));
 
-  Vector3f ext_pos = get_external_position();
-  DataFlash.WriteLong(get_int(ext_pos.x));
-  DataFlash.WriteLong(get_int(ext_pos.y));
-  DataFlash.WriteLong(get_int(ext_pos.z));
+  DataFlash.WriteLong(get_int(current_ext_pos.x));
+  DataFlash.WriteLong(get_int(current_ext_pos.y));
+  DataFlash.WriteLong(get_int(current_ext_pos.z));
+  
+  DataFlash.WriteLong(get_int(current_ext_speed.x));
+  DataFlash.WriteLong(get_int(current_ext_speed.y));
+  DataFlash.WriteLong(get_int(current_ext_speed.z));
+  
+  DataFlash.WriteLong(get_int(G_Dt*1000000));
 
   Log_Write_Footer();
 }
@@ -380,7 +385,7 @@ static void Log_Write_INS() {
 static void Log_Read_INS() {
   float logvar;
   Serial.print("INS");
-  for (int y = 0; y < 15; y++) {
+  for (int y = 0; y < 19; y++) {
     Serial.print(", ");
     logvar = get_float(DataFlash.ReadLong());
     Serial.print(logvar);
@@ -644,22 +649,10 @@ static void Log_Write_Nav_Tuning()
 	DataFlash.WriteInt(lat_error);							// 4
 	DataFlash.WriteInt(nav_lon);							// 5
 	DataFlash.WriteInt(nav_lat);							// 6
-	DataFlash.WriteInt(x_actual_speed);						// 7
-	DataFlash.WriteInt(y_actual_speed);					    // 8
-	DataFlash.WriteInt(g.pid_nav_lon.get_integrator());	// 9
-	DataFlash.WriteInt(g.pid_nav_lat.get_integrator());	// 10
-
-	/*DataFlash.WriteInt(wp_distance);						// 1
-	DataFlash.WriteInt(nav_bearing/100);					// 2
-	DataFlash.WriteInt(my_max_speed);						// 3
-	DataFlash.WriteInt(long_error);							// 4
-	DataFlash.WriteInt(x_actual_speed);						// 5
-	DataFlash.WriteInt(target_x_rate);						// 6
-	DataFlash.WriteInt(x_rate_error);						// 7
-	DataFlash.WriteInt(nav_lon_p);							// 8
-	DataFlash.WriteInt(g.pi_loiter_lon.get_integrator());	// 9
-	DataFlash.WriteInt(nav_lon);							// 10
-	*/
+	DataFlash.WriteInt(next_WP.lng);						// 7
+	DataFlash.WriteInt(next_WP.lat);						// 8
+	DataFlash.WriteInt(g.pid_nav_lon.get_integrator());		// 9
+	DataFlash.WriteInt(g.pid_nav_lat.get_integrator());		// 10
 
 	Log_Write_Footer();
 }

@@ -56,10 +56,10 @@ void calc_inertia()
         accels_acceleration = corr_acc;
 }
 
-void inertial_error_correction() {
+void inertial_error_correction(Vector3f current_pos, Vector3f current_vel) {
   
-  pos_error = get_external_position() - accels_position;
-  vel_error = get_external_velocity() - accels_velocity;
+  pos_error = current_pos - accels_position;
+  vel_error = current_vel - accels_velocity;
   
   accels_position      += pos_error * KALMAN_L[0];
   accels_velocity      += pos_error * KALMAN_L[1];
@@ -115,10 +115,6 @@ static inline Vector3f get_external_position() {
 }
 static inline void set_external_position_origin() {
   //set_ubisense_origin();
-}
-
-static inline Vector3f get_external_velocity() {
-  return Vector3f(x_actual_speed,y_actual_speed,0);
 }
 
 //////////////////////////////////////////////////

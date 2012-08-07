@@ -26,27 +26,22 @@ static bool check_missed_wp()
 
 // ------------------------------
 static void calc_XY_velocity(){
-	static float last_x  = 1e9;
-	static float last_y  = 1e9;
-	Vector3f current_pos;
+	static Vector3f last_ext_pos(0,0,0);
 
 	// initialise last_longitude and last_latitude
-	if( last_x == 1e9 && last_y == 1e9 ) {
-		current_pos = get_external_position();
+	if( last_ext_pos.x == 0 && last_ext_pos.y == 0 ) {
+		current_ext_pos = get_external_position();
 	
-		last_x = current_pos.x;
-		last_y = current_pos.y;
+		last_ext_pos = current_ext_pos;
 	}
 
 	// dTnav is for 50 Hz, this loops runs at 10 Hz
 	float tmp = 1.0/dTnav/5;
 
-	current_pos = get_external_position();
-	x_actual_speed 	= (float)(current_pos.x - last_x) * tmp;
-	y_actual_speed	= (float)(current_pos.y - last_y) * tmp;
+	current_ext_pos		= get_external_position();
+	current_ext_speed	= (current_ext_pos - last_ext_pos) * tmp;
 
-	last_x = current_pos.x;
-	last_y = current_pos.y;
+	last_ext_pos = current_ext_pos;
 
 	#if INERTIAL_NAV == ENABLED
 		if(control_mode == LOITER) {
@@ -56,14 +51,14 @@ static void calc_XY_velocity(){
 		}
 		
 		// inertial_nav
-		inertial_error_correction();
+		inertial_error_correction(current_ext_pos, current_ext_speed);
 	  
 		current_loc.lng = accels_position.y;
 		current_loc.lat = accels_position.x;
-	  
+	 
 	#else
-		current_loc.lng = xLeadFilter.get_position(g_gps->longitude, x_actual_speed);
-		current_loc.lat = yLeadFilter.get_position(g_gps->latitude,  y_actual_speed);
+		current_loc.lng = xLeadFilter.get_position(g_gps->longitude, current_ext_speed.x);
+		current_loc.lat = yLeadFilter.get_position(g_gps->latitude,  current_ext_speed.y);
 	#endif
 }
 
@@ -116,7 +111,7 @@ static void calc_loiter(int x_error, int y_error)
 	#if INERTIAL_NAV == ENABLED
 	x_rate_error	= x_target_speed - accels_velocity.y;		// calc the speed error
 	#else
-	x_rate_error	= x_target_speed - x_actual_speed;			// calc the speed error
+	x_rate_error	= x_target_speed - current_ext_speed.x;			// calc the speed error
 	#endif
 
 
@@ -126,7 +121,7 @@ static void calc_loiter(int x_error, int y_error)
 	d				= constrain(d, -2000, 2000);
 
 	// get rid of noise
-	if(abs(x_actual_speed) < 50){
+	if(abs(current_ext_speed.x) < 50){
 		d = 0;
 	}
 
@@ -154,7 +149,7 @@ static void calc_loiter(int x_error, int y_error)
 	#if INERTIAL_NAV == ENABLED
 	y_rate_error	= y_target_speed - accels_velocity.x;		// calc the speed error
 	#else
-	y_rate_error	= y_target_speed - y_actual_speed;			// calc the speed error
+	y_rate_error	= y_target_speed - current_ext_speed.y;			// calc the speed error
 	#endif
 
 	p				= g.pid_loiter_rate_lat.get_p(y_rate_error);
@@ -163,7 +158,7 @@ static void calc_loiter(int x_error, int y_error)
 	d				= constrain(d, -2000, 2000);
 
 	// get rid of noise
-	if(abs(y_actual_speed) < 50){
+	if(abs(current_ext_speed.y) < 50){
 		d = 0;
 	}
 
@@ -204,7 +199,7 @@ static void calc_nav_rate(int max_speed)
 	int16_t y_target_speed = cross_speed * temp_x + max_speed   * temp_y;
 
 	// East / West
-	x_rate_error 	= x_target_speed - x_actual_speed; // 413
+	x_rate_error 	= x_target_speed - current_ext_speed.x; // 413
 	x_rate_error 	= constrain(x_rate_error, -1000, 1000);
 	nav_lon			= g.pid_nav_lon.get_pid(x_rate_error, dTnav);
 	temp			= x_target_speed * x_target_speed;
@@ -217,7 +212,7 @@ static void calc_nav_rate(int max_speed)
 
 
 	// North / South
-	y_rate_error 	= y_target_speed - y_actual_speed; // 413
+	y_rate_error 	= y_target_speed - current_ext_speed.y; // 413
 	y_rate_error 	= constrain(y_rate_error, -1000, 1000);	// added a rate error limit to keep pitching down to a minimum
 	nav_lat			= g.pid_nav_lat.get_pid(y_rate_error, dTnav);
 	temp			= y_target_speed * y_target_speed;

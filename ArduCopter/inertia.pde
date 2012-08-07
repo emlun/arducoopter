@@ -35,8 +35,8 @@ void xy_error_correction()
 {
 	// Calculate speed error
 	// ---------------------
-	speed_error.x 		= x_actual_speed - accels_velocity.x;
-	speed_error.y 		= y_actual_speed - accels_velocity.y;
+	speed_error.x 		= x_current_ext_speed - accels_velocity.x;
+	speed_error.y 		= y_current_ext_speed - accels_velocity.y;
 
 	// correct integrated velocity by speed_error
 	// this number must be small or we will bring back sensor latency
