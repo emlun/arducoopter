@@ -954,7 +954,7 @@ void loop()
 		//Log_Write_Data(13, (int32_t)(timer - fast_loopTimer));
 
 		//PORTK |= B00010000;
-		G_Dt 				= min(G_Dt,0.015)
+		G_Dt 				= min(G_Dt,0.015);
 		G_Dt			   *= 0.99;
 		G_Dt 			   += 0.01*(float)(timer - fast_loopTimer) / 1000000.f;		// used by PI Loops
 		fast_loopTimer 		= timer;
