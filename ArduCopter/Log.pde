@@ -377,7 +377,7 @@ static void Log_Write_INS() {
   DataFlash.WriteLong(get_int(current_ext_speed.y));
   DataFlash.WriteLong(get_int(current_ext_speed.z));
   
-  DataFlash.WriteLong(get_int(G_Dt*1000000));
+  DataFlash.WriteLong(get_int(G_Dt*1000));
 
   Log_Write_Footer();
 }
