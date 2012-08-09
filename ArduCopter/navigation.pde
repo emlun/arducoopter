@@ -53,8 +53,8 @@ static void calc_XY_velocity(){
 		// inertial_nav
 		inertial_error_correction(current_ext_pos, current_ext_speed);
 	  
-		current_loc.lng = accels_position.y;
-		current_loc.lat = accels_position.x;
+		current_loc.lng = current_ext_pos.y;
+		current_loc.lat = current_ext_pos.x;
 	 
 	#else
 		current_loc.lng = xLeadFilter.get_position(g_gps->longitude, current_ext_speed.x);
@@ -75,10 +75,10 @@ static void calc_location_error(struct Location *next_loc)
 
 	#if INERTIAL_NAV == ENABLED
 	// X Error
-	long_error	= (float)(next_loc->lng - accels_position.y);   // Accels is NED, Longitude is E
+	long_error	= (float)(next_loc->lng - current_ext_pos.y);   // Accels is NED, Longitude is E
 
 	// Y Error
-	lat_error	= next_loc->lat - accels_position.x;			// Accels is NED, Latitude is N
+	lat_error	= next_loc->lat - current_ext_pos.x;			// Accels is NED, Latitude is N
 	#else
 	// X Error
 	long_error	= (float)(next_loc->lng - current_loc.lng);   // 500 - 0 = 500 Go East
@@ -109,7 +109,7 @@ static void calc_loiter(int x_error, int y_error)
 
 	// calculate rate error
 	#if INERTIAL_NAV == ENABLED
-	x_rate_error	= x_target_speed - accels_velocity.y;		// calc the speed error
+	x_rate_error	= x_target_speed - current_ext_speed.y;		// calc the speed error
 	#else
 	x_rate_error	= x_target_speed - current_ext_speed.x;			// calc the speed error
 	#endif
@@ -147,7 +147,7 @@ static void calc_loiter(int x_error, int y_error)
 
 	// calculate rate error
 	#if INERTIAL_NAV == ENABLED
-	y_rate_error	= y_target_speed - accels_velocity.x;		// calc the speed error
+	y_rate_error	= y_target_speed - current_ext_speed.x;		// calc the speed error
 	#else
 	y_rate_error	= y_target_speed - current_ext_speed.y;			// calc the speed error
 	#endif
