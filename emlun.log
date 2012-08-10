@@ -1,3 +1,21 @@
+2012-08-10
+
+Spent the first half of the day trying to get the second quadrotor to
+work again after yesterday's crash.
+
+Flew with both quadrotors at once. It was scary and they were confused
+by sonar echoes from each other. When we tried flying one above the
+other, the one on top rose a few meters. On several occasions the one
+on top kept rising until we panicked and ordered it to land, which it
+did relatively safely. Not one of the flights was without some drama.
+
+Tested a sole quadrotor for step responses when suddenly changing
+destination. While simple in theory, this turned out to be tricky in
+practice since the quadrotor did not hold the same yaw orientation
+throughout the test. This means it does not navigate quite correctly,
+and since the yaw direction seems to vary quite randomly, it is
+difficult to conduct several comparable tests.
+
 2012-08-09
 
 Assembled a second quadrotor and tried to get it to fly. Various
