@@ -1718,6 +1718,7 @@ void update_throttle_mode(void)
 				// so the props stop ... properly
 				// ----------------------------------------
 				g.rc_3.servo_out = 0;
+				takeoff_complete = false;
 			}
 			break;
 
@@ -1784,10 +1785,18 @@ void update_throttle_mode(void)
 
 				}
 				
-				// If the copter seems to be on the ground, push off by increasing throttle_cruise.
-				if(sonar_alt < 30  && sonar_rate < 10 && control_mode != LAND) {
+				// If we are above the ground with motors turning, assume take off
+				if (!takeoff_complete && motors.armed()) {
 				
-					if(g.throttle_cruise<300) {
+					if (sonar_alt > 50 && g.throttle_cruise>300){
+						takeoff_complete = true;
+					}
+				}
+				
+				// If the copter seems to be on the ground, push off by increasing throttle_cruise.
+				if (!takeoff_complete && sonar_alt < 30  && abs(sonar_rate) < 10 && control_mode != LAND) {
+				
+					if (g.throttle_cruise<300) {
 						g.throttle_cruise = 300;
 					}else {
 						g.throttle_cruise += 1;
