@@ -11,6 +11,11 @@ throttle at some 9 m height, severely damaging the protective dome and
 bending most pins on the Pololu and serial adapter. The circuits still
 seem to work, however.
 
+UPDATE 2012-08-10: It seems the Arduino board also took a beating. A
+relay had been disconnected from the board, and a switch seemed to be
+damaged. The program still seemed to run, but refused to respond to
+serial communications.
+
 2012-08-08
 Worked on the report.
 
