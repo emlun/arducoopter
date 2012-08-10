@@ -672,7 +672,7 @@ static byte		throttle_mode;
 // Flag for monitoring the status of flight
 // We must be in the air with throttle for 5 seconds before this flag is true
 // This flag is reset when we are in a manual throttle mode with 0 throttle or disarmed
-static boolean	takeoff_complete;
+static boolean	takeoff_complete = false;
 // Used to see if we have landed and if we should shut our engines - not fully implemented
 static boolean	land_complete = true;
 // used to manually override throttle in interactive Alt hold modes
@@ -1705,12 +1705,13 @@ void update_throttle_mode(void)
 				}
 				#endif
 
+				/*
 				if (takeoff_complete == false && motors.armed()){
 					if (g.rc_3.control_in > g.throttle_cruise){
 						// we must be in the air by now
 						takeoff_complete = true;
 					}
-				}
+				}*/
 
 			}else{
 
