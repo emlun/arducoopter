@@ -1,3 +1,19 @@
+2012-08-09
+
+Assembled a second quadrotor and tried to get it to fly. Various
+problems made this take most of the day. Most of the problems had to
+do with the settings on the quadrotor being bad, such as magnetometer
+calibration. Eventually we got it to fly properly, but then all of a
+sudden, mid-flight, the sonar started alternating between the correct
+altitude value and zero, triggering our takeoff boost code which made
+the quadrotor rise uncontrollably. We had no choice but to kill the
+throttle at some 9 m height, severely damaging the protective dome and
+bending most pins on the Pololu and serial adapter. The circuits still
+seem to work, however.
+
+2012-08-08
+Worked on the report.
+
 2012-08-07
 
 Improved the LabView control interface.
